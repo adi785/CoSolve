@@ -280,7 +280,7 @@ export const ProjectWorkspacePage = ({ projectId, navigate }) => {
           <div className="text-xs text-slate-500 flex items-center space-x-3">
             <span>Provider: <strong className="text-slate-800">{workspace.problem.creator_name} ({workspace.problem.panchayat_name || 'Village Authority'})</strong></span>
             <span>•</span>
-            <span>Lead Solver: <strong className="text-slate-800">{workspace.lead_solver.name} ({workspace.lead_solver.college_name || 'Student'})</strong></span>
+            <span>Lead Solver: <strong className="text-slate-800">{workspace.lead_solver.name}</strong> {workspace.project.team_name ? `• Team ${workspace.project.team_name}` : ''} ({workspace.lead_solver.college_name || 'Student'})</span>
           </div>
         </div>
 
@@ -291,6 +291,20 @@ export const ProjectWorkspacePage = ({ projectId, navigate }) => {
           <p className="text-xs text-slate-500 mt-1">
             Target Locality: {workspace.problem.affected_community} ({workspace.problem.geographic_district}, {workspace.problem.geographic_state})
           </p>
+        </div>
+
+        {/* Progress & Inactivity Cadence Block */}
+        <div className="space-y-1.5 p-3.5 bg-slate-50 rounded-2xl border border-slate-100">
+          <div className="flex items-center justify-between text-xs">
+            <span className="font-bold text-slate-800">Project Progress (Updated on 2-day cadence)</span>
+            <span className="font-extrabold text-emerald-800">{Math.round(workspace.project.progress_percentage || 0)}%</span>
+          </div>
+          <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
+            <div
+              className="bg-emerald-600 h-2 rounded-full transition-all"
+              style={{ width: `${Math.min(100, Math.max(5, workspace.project.progress_percentage || 0))}%` }}
+            />
+          </div>
         </div>
 
         {/* Quick Action Navigation Buttons */}
