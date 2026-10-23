@@ -1,18 +1,27 @@
 import './style.css';
-import { ApiClient, type User, type Problem, type DemoUser } from './api';
+import { ApiClient, type User, type Problem, type DemoUser, type StudentDirectoryItem } from './api';
 
 type View = 'home' | 'register' | 'organisation' | 'provider' | 'solver';
-type Role = 'solver' | 'provider' | 'organisation';
+type Role = 'provider' | 'solver' | 'organisation';
+type SolverRegType = 'individual' | 'organisation';
 
 let currentView: View = 'home';
 let selectedRole: Role = 'solver';
+let solverRegTab: SolverRegType = 'individual';
+
+// Navigation & Tab States
+let activeOrgTab = 'Overview'; // 'Overview' | 'List of Students' | 'List of Collaborators' | 'Previous Projects'
+let activeSolverWorkTab = 'individual'; // 'individual' | 'team'
+let orgProjectFilter = 'All'; // 'All' | 'completed' | 'ongoing' | 'unsuccessful'
+
 let modalOpen = false;
 let applyModalOpen = false;
+let studentDetailModalOpen = false;
+let selectedStudentForModal: StudentDirectoryItem | null = null;
 let selectedProblemForApply: Problem | null = null;
 let applyTab: 'individual' | 'team' = 'individual';
 let teamMembers: { name: string; email: string }[] = [{ name: '', email: '' }];
 
-let activeTab = 'Overview';
 let authMode: 'login' | 'register' = 'register';
 let authError = '';
 let challengeFilter = 'All';
@@ -22,24 +31,53 @@ let currentUser: User | null = ApiClient.getUser();
 let liveProblems: Problem[] = [];
 let demoUsers: DemoUser[] = [];
 let userProjects: any[] = [];
+let solverSkills: { id: string; skill_name: string }[] = [];
+let studentDirectory: StudentDirectoryItem[] = [];
+let directorySearchQuery = '';
+let directorySortBy = 'name';
+
+// Statistics states
+let providerStats = {
+  pie_chart: { problems_accepted: 4, problems_rejected: 1 },
+  stats: { total_submitted: 5, pending_review: 0, currently_being_solved: 2, completed: 2 }
+};
+
+let solverDashboardData: {
+  pie_chart: { problems_solved: number; problems_ongoing: number; problems_failed: number };
+  individual_projects: any[];
+  team_projects: any[];
+} = {
+  pie_chart: { problems_solved: 4, problems_ongoing: 2, problems_failed: 0 },
+  individual_projects: [],
+  team_projects: []
+};
+
+let orgDashboardData: any = {
+  org_name: 'COEP Technological University',
+  aicte_code: '1-34891024',
+  spoc_name: 'Dr. Vikram Mehta',
+  spoc_email: 'vikram.mehta@ruraltech.org',
+  address: 'Wellesley Rd, Shivajinagar, Pune, Maharashtra 411005',
+  pie_chart: { solved_by_students: 14, solved_by_collaborators: 6 },
+  collaborators: [
+    { name: "Rural Technology Action Group (RuTAG)", role: "Technical Mentorship", projects: 4 },
+    { name: "State Jal Shakti Mission", role: "Civic Partner", projects: 3 },
+    { name: "Maharashtra Innovation Society", role: "CSR Sponsor", projects: 5 }
+  ],
+  previous_projects: []
+};
 
 const photos = {
   hero: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1400&q=85',
   field: 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=1000&q=85',
   community: 'https://images.unsplash.com/photo-1559027615-cd4628902d4a?auto=format&fit=crop&w=1000&q=85',
   student: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1000&q=85',
-  site: 'https://images.unsplash.com/photo-1516937941344-00b4e0337589?auto=format&fit=crop&w=1000&q=85',
   school: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=1000&q=85',
   flood: 'https://images.unsplash.com/photo-1547683905-f686c993aae5?auto=format&fit=crop&w=1000&q=85',
-  bus: 'https://images.unsplash.com/photo-1570125909232-eb263c188f7e?auto=format&fit=crop&w=1000&q=85',
-  hospital: 'https://images.unsplash.com/photo-1586773860418-d37222d8fce3?auto=format&fit=crop&w=1000&q=85',
-  footpath: 'https://images.unsplash.com/photo-1519608487953-e999c86e7455?auto=format&fit=crop&w=1000&q=85',
-  learning: 'https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=1000&q=85',
-  lights: 'https://images.unsplash.com/photo-1519608487953-e999c86e7455?auto=format&fit=crop&w=1000&q=85',
   water: 'https://images.unsplash.com/photo-1530053969600-caed2596d242?auto=format&fit=crop&w=1000&q=85',
-  lake: 'https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=1000&q=85',
-  access: 'https://images.unsplash.com/photo-1573496358770-bb7c9b8b6e0a?auto=format&fit=crop&w=1000&q=85',
-  food: 'https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=1000&q=85'
+  hospital: 'https://images.unsplash.com/photo-1586773860418-d37222d8fce3?auto=format&fit=crop&w=1000&q=85',
+  bus: 'https://images.unsplash.com/photo-1570125909232-eb263c188f7e?auto=format&fit=crop&w=1000&q=85',
+  lights: 'https://images.unsplash.com/photo-1519608487953-e999c86e7455?auto=format&fit=crop&w=1000&q=85'
 };
 
 function getImageForCategory(cat: string): string {
@@ -50,8 +88,6 @@ function getImageForCategory(cat: string): string {
   if (c.includes('edu') || c.includes('school')) return photos.school;
   if (c.includes('trans')) return photos.bus;
   if (c.includes('health')) return photos.hospital;
-  if (c.includes('access')) return photos.access;
-  if (c.includes('light')) return photos.lights;
   return photos.community;
 }
 
@@ -74,9 +110,17 @@ async function initAppData() {
       { name: "Dr. Sunita Rao", email: "admin@samarthya.gov.in", role: "admin", entity: "State Innovation Council" }
     ]);
 
-    // Fetch user projects if logged in
+    // Fetch role-specific stats
     if (currentUser) {
-      userProjects = await ApiClient.getProjects().catch(() => []);
+      if (currentUser.role === 'provider') {
+        providerStats = await ApiClient.getProviderStats().catch(() => providerStats);
+      } else if (currentUser.role === 'solver') {
+        solverDashboardData = await ApiClient.getSolverStats().catch(() => solverDashboardData);
+        solverSkills = await ApiClient.getSkills().catch(() => []);
+      } else if (currentUser.role === 'organization' || currentUser.role === 'institution' || currentUser.role === 'admin') {
+        orgDashboardData = await ApiClient.getOrgDashboardStats().catch(() => orgDashboardData);
+        studentDirectory = await ApiClient.getOrgStudents(directorySearchQuery, directorySortBy).catch(() => []);
+      }
     }
 
     render();
@@ -85,10 +129,87 @@ async function initAppData() {
   }
 }
 
+// SVG Pie Chart Generator
+function renderSvgPieChart(slices: { label: string; value: number; color: string }[], size = 180): string {
+  const total = slices.reduce((acc, s) => acc + s.value, 0);
+  const radius = size / 2;
+  const center = radius;
+
+  if (total === 0) {
+    return `
+      <div class="pie-chart-flex">
+        <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+          <circle cx="${center}" cy="${center}" r="${radius - 12}" fill="none" stroke="#e9ddcc" stroke-width="24" />
+          <text x="${center}" y="${center + 4}" text-anchor="middle" fill="#78716c" font-size="12" font-family="sans-serif">No Records</text>
+        </svg>
+        <div class="pie-legend">
+          ${slices.map(s => `
+            <div class="legend-item">
+              <span class="legend-color-dot" style="background-color: ${s.color}"></span>
+              <span>${escapeHTML(s.label)}</span>
+              <span class="legend-val">0 (0%)</span>
+            </div>
+          `).join('')}
+        </div>
+      </div>`;
+  }
+
+  // Calculate paths
+  let currentAngle = -Math.PI / 2; // start at 12 o'clock
+  const paths: string[] = [];
+
+  slices.forEach(slice => {
+    if (slice.value === 0) return;
+    const sliceAngle = (slice.value / total) * 2 * Math.PI;
+
+    if (sliceAngle >= 2 * Math.PI - 0.001) {
+      // Full circle
+      paths.push(`<circle cx="${center}" cy="${center}" r="${radius - 16}" fill="${slice.color}" />`);
+      return;
+    }
+
+    const x1 = center + (radius - 16) * Math.cos(currentAngle);
+    const y1 = center + (radius - 16) * Math.sin(currentAngle);
+
+    currentAngle += sliceAngle;
+
+    const x2 = center + (radius - 16) * Math.cos(currentAngle);
+    const y2 = center + (radius - 16) * Math.sin(currentAngle);
+
+    const largeArcFlag = sliceAngle > Math.PI ? 1 : 0;
+    const pathData = `M ${center} ${center} L ${x1} ${y1} A ${radius - 16} ${radius - 16} 0 ${largeArcFlag} 1 ${x2} ${y2} Z`;
+
+    paths.push(`<path d="${pathData}" fill="${slice.color}" stroke="#fffdf6" stroke-width="2" />`);
+  });
+
+  return `
+    <div class="pie-chart-flex">
+      <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+        ${paths.join('')}
+        <circle cx="${center}" cy="${center}" r="${radius - 50}" fill="var(--card)" />
+        <text x="${center}" y="${center - 2}" text-anchor="middle" fill="var(--ink)" font-size="18" font-weight="bold" font-family="sans-serif">${total}</text>
+        <text x="${center}" y="${center + 14}" text-anchor="middle" fill="var(--muted)" font-size="10" font-family="sans-serif">TOTAL</text>
+      </svg>
+      <div class="pie-legend">
+        ${slices.map(s => {
+          const pct = total > 0 ? Math.round((s.value / total) * 100) : 0;
+          return `
+            <div class="legend-item">
+              <span class="legend-color-dot" style="background-color: ${s.color}"></span>
+              <span>${escapeHTML(s.label)}</span>
+              <span class="legend-val">${s.value} <small style="color:var(--muted)">(${pct}%)</small></span>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    </div>`;
+}
+
 function go(view: View) {
   currentView = view;
   modalOpen = false;
   applyModalOpen = false;
+  studentDetailModalOpen = false;
   authError = '';
   render();
   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -110,7 +231,7 @@ function header() {
             </span>
             <button class="button button-outline" data-action="signout">Sign Out</button>
           ` : `
-            <button class="button button-dark nav-start" data-view="register">Get Started ↗</button>
+            <button class="button button-dark nav-start" data-action="register">Get Started ↗</button>
             <button class="button button-outline nav-login" data-action="signin">Login</button>
           `}
         </div>
@@ -129,7 +250,7 @@ function nav() {
     { label: 'PUBLIC', view: 'home', symbol: '◉' },
     { label: 'SOLVER', view: 'solver', symbol: '◎' },
     { label: 'PROVIDER', view: 'provider', symbol: '♧' },
-    { label: 'INSTITUTION', view: 'organisation', symbol: '⌂' }
+    { label: 'ORGANISATION', view: 'organisation', symbol: '⌂' }
   ];
 
   return `<nav class="bottom-nav">${items.map(item => `
@@ -229,6 +350,7 @@ function homePage() {
       <div class="who-heading reveal"><h2>WHO ARE WE?</h2></div>
       <div class="who-copy reveal"><p>We are a community of students, mentors, and changemakers working together to understand real-world challenges and build meaningful solutions.</p><p>We turn ideas into action and student potential into solutions that matter.</p></div>
     </section>
+
     <section class="section section-pad process-section">
       <div class="eyebrow">FROM CONCERN TO CHANGE</div><h2>How CO-SOLVE works.</h2>
       <div class="stage-list">
@@ -258,7 +380,7 @@ function homePage() {
       </div>
       <p class="impact-quote">We turn ideas into action and student potential into solutions that matter.</p>
       <div class="impact-action">
-        <button class="button button-dark" data-view="register">Be Part of Change <span aria-hidden="true">→</span></button>
+        <button class="button button-dark" data-action="register">Be Part of Change <span aria-hidden="true">→</span></button>
       </div>
     </section>
 
@@ -269,59 +391,25 @@ function homePage() {
         <article class="pillar reveal"><span class="pillar-icon">✳</span><b>Student solvers</b><p>Use your skills, curiosity and creativity to build solutions.</p><button class="text-action" data-view="solver">Explore solver space ↗</button></article>
         <article class="pillar reveal"><span class="pillar-icon">⌂</span><b>Institutions</b><p>Support teams, offer mentorship and help validate outcomes.</p><button class="text-action" data-view="organisation">Partner with us ↗</button></article>
       </div>
-      <button class="button button-dark full" data-view="register">Join CO-SOLVE ↗</button>
+      <button class="button button-dark full" data-action="register">Join CO-SOLVE ↗</button>
     </section>`;
 }
 
-function roleFields() {
-  if (selectedRole === 'solver') return `
-    <label class="field">College / Institution<input name="institution" placeholder="Your college or university" required></label>
-    <div class="field-grid">
-      <label class="field">Course / discipline<input name="course" placeholder="e.g. B.Tech CSE" required></label>
-      <label class="field">Year of study<select name="year"><option value="1">Year 1</option><option value="2">Year 2</option><option value="3">Year 3</option><option value="4" selected>Year 4</option><option value="5">Graduate / Other</option></select></label>
-    </div>
-    <label class="field">Skills and interests<input name="skills" placeholder="e.g. web development, GIS, design"></label>
-    <label class="field">Portfolio / LinkedIn (optional)<input name="portfolio" type="url" placeholder="https://"></label>
-    <label class="field">Weekly availability<select name="availability"><option>1–3 hours</option><option>4–6 hours</option><option>7–10 hours</option><option>10+ hours</option></select></label>`;
-
-  if (selectedRole === 'provider') return `
-    <label class="field">Community / locality<input name="institution" placeholder="Neighbourhood, ward or community group" required></label>
-    <label class="field">Problem area<select name="focus"><option>Environment & sanitation</option><option>Education</option><option>Infrastructure</option><option>Transport</option><option>Healthcare</option><option>Accessibility</option><option>Water</option><option>Food security</option><option>Other</option></select></label>
-    <label class="field">City / location<input name="location" placeholder="City, area or landmark" required></label>
-    <label class="field">Contact preference<select name="contact"><option>Email</option><option>Phone</option><option>Through community organisation</option></select></label>`;
-
-  return `
-    <label class="field">Organisation name<input name="institution" placeholder="Official organisation name" required></label>
-    <div class="field-grid">
-      <label class="field">Organisation type<select name="orgType"><option>NGO / Non-profit</option><option>University / College</option><option>Community group</option><option>Government / Civic body</option><option>CSR / Corporate</option><option>Research institution</option><option>Other</option></select></label>
-      <label class="field">Team size<select name="teamSize"><option>1–5</option><option>6–20</option><option>21–50</option><option>50+</option></select></label>
-    </div>
-    <label class="field">Website (optional)<input name="website" type="url" placeholder="https://"></label>
-    <label class="field">Focus areas<input name="focus" placeholder="e.g. education, environment, accessibility"></label>
-    <label class="field">City / operating region<input name="location" placeholder="City or region" required></label>`;
-}
-
-// Original CosolveV1 Page Design for Registration and Login
+// PRD Section 1: Registration Form with 3 Types (Provider, Individual Solver, Organisation)
 function registerPage() {
-  const roles: [Role, string, string, string][] = [
-    ['provider', 'Problem Provider', 'Citizens and communities reporting issues', '♧'],
-    ['solver', 'Individual Solver', 'Students and experts building solutions', '✳'],
-    ['organisation', 'Organisation', 'Universities, NGOs and civic partners', '⌂']
-  ];
-
   return `
     <section class="section section-pad register-layout">
       <div class="register-intro">
         <div class="eyebrow">CIVIC REGISTRY</div>
         <h1 class="small-title">Join the<br>Coordination Network</h1>
-        <p>Select your role to enter your CO-SOLVE workspace.</p>
+        <p>Select your account type to enter your CO-SOLVE workspace.</p>
         <div class="register-visual">
           <img src="${photos.student}" alt="Students collaborating">
           <div><strong>Many perspectives.</strong><br>One shared purpose.</div>
         </div>
 
         <div class="demo-persona-container" style="margin-top: 20px;">
-          <div class="demo-persona-title">Quick Demo Persona Logins</div>
+          <div class="demo-persona-title">Quick 1-Click Demo Login</div>
           <div class="demo-persona-list">
             <button type="button" class="demo-persona-btn" data-demo-email="sarpanch.ramesh@shirur-panchayat.org" data-demo-role="provider">
               <span>Ramesh Patil</span>
@@ -331,17 +419,9 @@ function registerPage() {
               <span>Arjun Sharma</span>
               <small>Student Solver</small>
             </button>
-            <button type="button" class="demo-persona-btn" data-demo-email="priya.nair@iitb.ac.in" data-demo-role="solver">
-              <span>Priya Nair</span>
-              <small>Student Solver</small>
-            </button>
             <button type="button" class="demo-persona-btn" data-demo-email="vikram.mehta@ruraltech.org" data-demo-role="organization">
               <span>Dr. Vikram Mehta</span>
-              <small>Institution</small>
-            </button>
-            <button type="button" class="demo-persona-btn" data-demo-email="admin@samarthya.gov.in" data-demo-role="admin">
-              <span>Dr. Sunita Rao</span>
-              <small>Authority</small>
+              <small>Organisation</small>
             </button>
           </div>
         </div>
@@ -353,239 +433,649 @@ function registerPage() {
           <button type="button" class="${authMode === 'register' ? 'selected' : ''}" data-auth-mode="register">Create account</button>
         </div>
 
-        <form id="register-form">
-          ${authError ? `<div style="padding: 10px 14px; background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); border-radius: 8px; color: #b91c1c; font-size: 13px; font-weight: 600; margin-bottom: 14px;">${escapeHTML(authError)}</div>` : ''}
-
-          <div class="form-heading">STEP 01 — SELECT YOUR ROLE</div>
-          <div class="role-list">
-            ${roles.map(([id, name, desc, symbol]) => `
-              <label class="role-card ${selectedRole === id ? 'chosen' : ''}">
-                <input type="radio" name="role" value="${id}" ${selectedRole === id ? 'checked' : ''}>
-                <span class="role-symbol">${symbol}</span>
-                <span class="role-copy"><b>${name}</b><small>${desc}</small></span>
-              </label>`).join('')}
-          </div>
-
-          <div class="form-heading">STEP 02 — ${authMode === 'login' ? 'SIGN IN DETAILS' : 'YOUR DETAILS'}</div>
-
-          ${authMode === 'register' ? `<label class="field">Full name<input name="name" autocomplete="name" placeholder="Enter your full name" required></label>` : ''}
-          <label class="field">Email address<input name="email" id="auth-email-input" type="email" autocomplete="email" placeholder="you@example.com" required></label>
-          <label class="field">Password<input name="password" id="auth-password-input" type="password" autocomplete="${authMode === 'login' ? 'current-password' : 'new-password'}" placeholder="${authMode === 'login' ? 'Enter your password (Demo: DemoPassword123!)' : 'At least 8 characters'}" minlength="6" required></label>
-
-          ${authMode === 'register' ? roleFields() + `<label class="consent"><input type="checkbox" required checked> I agree to follow CO-SOLVE’s community, privacy and verification guidelines.</label>` : ''}
-
-          <button class="button button-dark full" type="submit" id="auth-submit-btn">
-            ${authMode === 'login' ? 'Continue to Workspace →' : 'Create account & continue →'}
-          </button>
-        </form>
+        ${authMode === 'login' ? renderLoginForm() : renderRegisterForm()}
       </div>
     </section>`;
 }
 
-function organisationPage() {
-  const instName = currentUser?.role === 'organization' ? currentUser.full_name : 'Delhi Technological University';
+// PRD Section 2: User Login Form (Common interface for all three account types)
+function renderLoginForm() {
   return `
-    <section class="section section-pad dashboard">
-      <div class="dashboard-cover org-cover">
-        <img src="${photos.student}" alt="Students collaborating on a project">
-        <div class="cover-overlay">
-          <span class="tag">DEMO ORGANISATION</span>
-          <h1 class="small-title">${escapeHTML(instName)}</h1>
-          <p>Academic innovation partner · North NCR</p>
-        </div>
+    <form id="login-form">
+      ${authError ? `<div style="padding: 10px 14px; background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); border-radius: 8px; color: #b91c1c; font-size: 13px; font-weight: 600; margin-bottom: 14px;">${escapeHTML(authError)}</div>` : ''}
+
+      <div class="form-heading">SIGN IN TO YOUR WORKSPACE</div>
+
+      <label class="field">
+        Phone Number or Email Address
+        <input name="identifier" id="login-identifier" required placeholder="you@example.com or +91 98765 43210">
+      </label>
+
+      <label class="field">
+        Password
+        <input name="password" type="password" id="login-password" required placeholder="Enter password (Demo: DemoPassword123!)">
+      </label>
+
+      <div class="field-grid" style="align-items: flex-end;">
+        <label class="field" style="margin: 0;">
+          Verification Code (OTP) — Optional
+          <input name="otp" placeholder="Enter OTP (Optional)">
+        </label>
+        <button type="button" class="button button-outline" data-action="request-login-otp" style="height: 44px;">
+          Send OTP
+        </button>
       </div>
 
-      <div class="stats-grid">
-        <div class="stat"><strong>${liveProblems.filter(p => p.is_taken).length || 14}</strong><small>ADOPTED CHALLENGES</small></div>
-        <div class="stat"><strong>48</strong><small>ACTIVE STUDENTS</small></div>
-        <div class="stat"><strong>94.2%</strong><small>RESOLUTION RATE</small></div>
-        <div class="stat"><strong>06</strong><small>GRANT POOLS</small></div>
+      <div style="display: flex; justify-content: flex-end; margin: 8px 0 16px;">
+        <button type="button" class="text-action" data-action="forgot-password" style="font-size: 13px;">Forgot Password?</button>
       </div>
 
-      <div class="tabs">${['Overview', 'Adopt Challenges', 'Student Pods'].map(t => `<button class="${activeTab === t ? 'tab-active' : ''}" data-tab="${t}">${t}</button>`).join('')}</div>
+      <button class="button button-dark full" type="submit" id="auth-submit-btn">
+        Login to Workspace →
+      </button>
+    </form>`;
+}
 
-      ${activeTab === 'Overview' ? `
-        <div class="dashboard-welcome">
-          <div>
-            <div class="eyebrow">PARTNERSHIP WORKSPACE</div>
-            <h2>Make collaboration count.</h2>
-            <p>Coordinate student teams, review field progress and document verified impact.</p>
-          </div>
-          <img src="${photos.community}" alt="Community partnership">
-        </div>
-        <div class="dashboard-actions">
-          <button class="button button-dark" data-view="home">Browse Challenges ↗</button>
-          <button class="button button-outline" data-tab="Student Pods">View Student Pods</button>
-        </div>
-        <div class="mini-grid">
-          <article class="mini-card"><span>↗</span><b>Challenge matching</b><p>Find a community problem that fits your teams.</p></article>
-          <article class="mini-card"><span>◎</span><b>Impact verification</b><p>Keep project evidence and progress visible.</p></article>
-        </div>
-      ` : ''}
+// PRD Section 1: User Registration Forms
+function renderRegisterForm() {
+  return `
+    <form id="register-form">
+      ${authError ? `<div style="padding: 10px 14px; background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); border-radius: 8px; color: #b91c1c; font-size: 13px; font-weight: 600; margin-bottom: 14px;">${escapeHTML(authError)}</div>` : ''}
 
-      ${activeTab === 'Adopt Challenges' ? `
-        <h2>Available challenges</h2>
-        <div class="challenge-list">
-          ${liveProblems.map(challengeCard).join('')}
-        </div>
-      ` : ''}
-
-      ${activeTab === 'Student Pods' ? `
-        <h2>Active student pods</h2>
+      <div class="form-heading">STEP 01 — SELECT ACCOUNT TYPE</div>
+      <div class="role-list" style="margin-bottom: 20px;">
         ${[
-          ['Enactus Eco-Cell', 'Neighbourhood waste mapping', photos.field],
-          ['Civic Sensing Lab', 'Water supply reporting pilot', photos.site],
-          ['Urban Inclusion Collective', 'Footpath accessibility audit', photos.community]
-        ].map(([team, project, image]) => `
-          <article class="pod-card reveal">
-            <img src="${image}" alt="${team}" loading="lazy">
-            <div>
-              <b>${team}</b>
-              <p>${project}</p>
-              <span class="tag">Field deployment</span>
-            </div>
-          </article>`).join('')}
-      ` : ''}
-    </section>`;
+          ['provider', 'Problem Provider', 'Verified individuals and village panchayats', '♧'],
+          ['solver', 'Problem Solver', 'Students and educational organisations', '✳']
+        ].map(([id, name, desc, symbol]) => `
+          <label class="role-card ${selectedRole === id ? 'chosen' : ''}">
+            <input type="radio" name="account_type" value="${id}" ${selectedRole === id ? 'checked' : ''}>
+            <span class="role-symbol">${symbol}</span>
+            <span class="role-copy"><b>${name}</b><small>${desc}</small></span>
+          </label>`).join('')}
+      </div>
+
+      ${selectedRole === 'provider' ? renderProviderRegistrationFields() : renderSolverRegistrationTabs()}
+
+      <button class="button button-dark full" type="submit" id="auth-submit-btn" style="margin-top: 20px;">
+        Create Account & Continue →
+      </button>
+    </form>`;
 }
 
+// 1.1 Problem Provider Registration Fields
+function renderProviderRegistrationFields() {
+  return `
+    <div class="form-heading">STEP 02 — PROVIDER CREDENTIALS & AADHAAR VERIFICATION</div>
+    
+    <label class="field">Full Name<input name="full_name" required placeholder="Enter full name as per official records"></label>
+    
+    <div class="field-grid">
+      <label class="field">Phone Number<input name="phone" type="tel" required placeholder="+91 98765 43210"></label>
+      <label class="field">Email Address<input name="email" type="email" required placeholder="provider@panchayat.org"></label>
+    </div>
+
+    <div class="field-grid">
+      <label class="field">Aadhaar Number<input name="aadhaar_number" maxlength="14" required placeholder="12-digit Aadhaar number"></label>
+      <div style="display: flex; align-items: flex-end; gap: 8px;">
+        <label class="field" style="flex: 1; margin: 0;">Aadhaar Verification OTP<input name="aadhaar_otp" required placeholder="Enter OTP"></label>
+        <button type="button" class="button button-outline" data-action="request-aadhaar-otp" style="height: 44px; white-space: nowrap;">Get OTP</button>
+      </div>
+    </div>
+
+    <label class="field">Panchayat / Locality Address<textarea name="address" required rows="2" placeholder="Gram Panchayat, Taluka, District, State"></textarea></label>
+    <label class="field">Profile Photo (Optional Upload / URL)<input name="avatar_url" type="url" placeholder="https://image-url or profile image"></label>
+
+    <div class="field-grid">
+      <label class="field">Password<input name="password" id="reg-pw" type="password" minlength="8" required placeholder="At least 8 characters"></label>
+      <label class="field">Re-enter Password<input name="confirm_password" id="reg-cpw" type="password" minlength="8" required placeholder="Confirm password"></label>
+    </div>
+
+    <label class="consent"><input type="checkbox" required checked> I confirm authorized representation and consent to secure, lawful verification.</label>`;
+}
+
+// 1.2 Problem Solver Registration with 2 Tabs (Individual & Organisation)
+function renderSolverRegistrationTabs() {
+  return `
+    <div class="form-heading">STEP 02 — SOLVER CLASSIFICATION</div>
+    <div class="apply-tabs" style="margin-bottom: 18px;">
+      <button type="button" class="apply-tab-btn ${solverRegTab === 'individual' ? 'active' : ''}" data-solver-reg-tab="individual">
+        Individual (Student)
+      </button>
+      <button type="button" class="apply-tab-btn ${solverRegTab === 'organisation' ? 'active' : ''}" data-solver-reg-tab="organisation">
+        Organisation (University / NGO)
+      </button>
+    </div>
+
+    ${solverRegTab === 'individual' ? `
+      <!-- A. Individual Registration -->
+      <label class="field">Full Name<input name="full_name" required placeholder="Enter full name"></label>
+      
+      <div class="field-grid">
+        <label class="field">Email Address<input name="email" type="email" required placeholder="student@college.ac.in"></label>
+        <label class="field">Phone Number<input name="phone" type="tel" required placeholder="+91 98765 43210"></label>
+      </div>
+
+      <div class="field-grid">
+        <label class="field">Institution Name (Optional for independent solvers)<input name="college_name" placeholder="e.g. COEP Technological University"></label>
+        <label class="field">Roll Number (Optional)<input name="roll_number" placeholder="e.g. 2022-CS-041"></label>
+      </div>
+
+      <div style="display: flex; gap: 8px; align-items: flex-end; margin-bottom: 16px;">
+        <label class="field" style="flex: 1; margin: 0;">Phone Verification Code (OTP)<input name="phone_otp" required placeholder="Enter 6-digit OTP"></label>
+        <button type="button" class="button button-outline" data-action="request-phone-otp" style="height: 44px; white-space: nowrap;">Get OTP</button>
+      </div>
+
+      <label class="field">Profile Photo (Optional Upload / URL)<input name="avatar_url" type="url" placeholder="https://image-url"></label>
+      <label class="field">Initial Skills (Comma-separated)<input name="skills" placeholder="e.g. Python, React, IoT, GIS"></label>
+
+      <div class="field-grid">
+        <label class="field">Password<input name="password" id="reg-pw" type="password" minlength="8" required placeholder="At least 8 characters"></label>
+        <label class="field">Re-enter Password<input name="confirm_password" id="reg-cpw" type="password" minlength="8" required placeholder="Confirm password"></label>
+      </div>
+    ` : `
+      <!-- B. Organisation Registration -->
+      <label class="field">Institute Name<input name="full_name" required placeholder="e.g. Delhi Technological University"></label>
+      
+      <div class="field-grid">
+        <label class="field">AICTE Institution Code<input name="aicte_code" required placeholder="e.g. 1-34891024"></label>
+        <label class="field">Institute Logo (Optional URL)<input name="logo_url" type="url" placeholder="https://logo-url"></label>
+      </div>
+
+      <div class="field-grid">
+        <label class="field">SPOC Name (Single Point of Contact)<input name="spoc_name" required placeholder="e.g. Dr. Vikram Mehta"></label>
+        <label class="field">SPOC Phone Number<input name="spoc_phone" type="tel" required placeholder="+91 98230 44120"></label>
+      </div>
+
+      <label class="field">SPOC / Official Email Address<input name="email" type="email" required placeholder="spoc@institute.ac.in"></label>
+      <label class="field">Institute Campus Address<input name="address" required placeholder="City, District, State, PIN"></label>
+
+      <div class="field-grid">
+        <label class="field">Password<input name="password" id="reg-pw" type="password" minlength="8" required placeholder="At least 8 characters"></label>
+        <label class="field">Re-enter Password<input name="confirm_password" id="reg-cpw" type="password" minlength="8" required placeholder="Confirm password"></label>
+      </div>
+    `}
+
+    <label class="consent"><input type="checkbox" required checked> I agree to follow CO-SOLVE’s verification, student coordination, and data privacy policies.</label>`;
+}
+
+// PRD Section 3: Problem Provider Dashboard (Left Sidebar + Main Dashboard)
 function providerPage() {
+  const pName = currentUser?.full_name || 'Ramesh Patil';
+  const pEmail = currentUser?.email || 'sarpanch.ramesh@shirur-panchayat.org';
+  const pAddress = currentUser?.address || 'Shirur Gram Panchayat, Pune District, Maharashtra';
+  const pAvatar = currentUser?.avatar_url || photos.community;
+
+  const pieSlices = [
+    { label: 'Problems Accepted', value: providerStats.pie_chart.problems_accepted, color: '#16a34a' },
+    { label: 'Problems Rejected', value: providerStats.pie_chart.problems_rejected, color: '#dc2626' }
+  ];
+
   return `
-    <section class="section section-pad dashboard">
-      <div class="eyebrow">COMMUNITY ISSUE DESK · DEMO</div>
-      <h1 class="small-title">Your community, heard.</h1>
-      <p>Report problems, add context and follow the progress of local solutions.</p>
+    <div class="section section-pad prd-dashboard-layout">
+      <!-- 3.1 Left Sidebar — Profile and Navigation -->
+      <aside class="prd-sidebar">
+        <div class="sidebar-profile">
+          <img class="sidebar-avatar" src="${pAvatar}" alt="${escapeHTML(pName)}">
+          <h2 class="sidebar-name">${escapeHTML(pName)}</h2>
+          <span class="tag" style="align-self: center;">Problem Provider</span>
+          <div class="sidebar-meta">✉ ${escapeHTML(pEmail)}</div>
+          <div class="sidebar-meta">⌖ ${escapeHTML(pAddress)}</div>
+        </div>
 
-      <div class="dashboard-welcome">
+        <nav class="sidebar-nav-list">
+          <button type="button" class="sidebar-nav-btn active" data-scroll="post-problem-section">
+            <span>✍</span> Post a Problem
+          </button>
+          <button type="button" class="sidebar-nav-btn" data-action="rewards-recognition">
+            <span>🏆</span> Rewards and Recognition
+          </button>
+        </nav>
+      </aside>
+
+      <!-- 3.2 Main Dashboard — Problem Statistics -->
+      <main class="prd-main">
+        <div class="eyebrow">PROVIDER PERFORMANCE & LEDGER</div>
+        <h2>Problem Review & Verification Status</h2>
+
+        <!-- Pie Chart -->
+        <div class="pie-chart-card">
+          <div class="pie-chart-header">
+            <h3>Problems Review Outcome</h3>
+            <p style="margin: 0; font-size: 13px; color: var(--muted);">Direct acceptance ratio calculated from verified community submissions.</p>
+          </div>
+          ${renderSvgPieChart(pieSlices, 190)}
+        </div>
+
+        <!-- Additional Recommended Statistics -->
+        <div class="stats-grid" style="margin-bottom: 28px;">
+          <div class="stat"><strong>${providerStats.stats.total_submitted}</strong><small>TOTAL SUBMITTED</small></div>
+          <div class="stat"><strong>${providerStats.stats.pending_review}</strong><small>PENDING REVIEW</small></div>
+          <div class="stat"><strong>${providerStats.stats.currently_being_solved}</strong><small>BEING SOLVED</small></div>
+          <div class="stat"><strong>${providerStats.stats.completed}</strong><small>COMPLETED</small></div>
+        </div>
+
+        <!-- Post a Problem Form Section -->
+        <section id="post-problem-section" class="form-panel" style="margin-bottom: 28px;">
+          <div class="form-heading">SUBMIT A NEW SOCIETAL CHALLENGE</div>
+          <form id="issue-form">
+            <label class="field">Problem Title<input name="title" required placeholder="e.g. Fluoride Contamination in East Shirur Wells"></label>
+            <div class="field-grid">
+              <label class="field">Category
+                <select name="category">
+                  <option>Water Supply</option>
+                  <option>Sanitation & Waste</option>
+                  <option>Infrastructure</option>
+                  <option>Healthcare</option>
+                  <option>Education</option>
+                  <option>Agriculture & Food</option>
+                </select>
+              </label>
+              <label class="field">Urgency
+                <select name="urgency">
+                  <option value="Normal">Normal</option>
+                  <option value="High">High</option>
+                  <option value="Critical">Critical</option>
+                </select>
+              </label>
+            </div>
+            <label class="field">Location / Beneficiary Community<input name="location" required placeholder="Village, ward, or taluka name"></label>
+            <label class="field">Problem Description & Root Cause<textarea name="description" required rows="3" placeholder="Describe the ground problem, current impact, and limitations..."></textarea></label>
+            <label class="field">Expected Deliverables & Outcomes<input name="expected_outcomes" placeholder="e.g. Safe water supply testing kit and community filtration unit"></label>
+            <button class="button button-dark full" type="submit" id="issue-submit-btn">Submit Challenge to AI Analysis →</button>
+          </form>
+        </section>
+
+        <h3>Your Submitted Problems in Field</h3>
+        <div class="challenge-list">
+          ${liveProblems.slice(0, 4).map(challengeCard).join('')}
+        </div>
+      </main>
+    </div>`;
+}
+
+// PRD Section 4: Individual Problem Solver Dashboard
+function solverPage() {
+  const sName = currentUser?.full_name || 'Arjun Sharma';
+  const sEmail = currentUser?.email || 'arjun.sharma@coep.ac.in';
+  const sPhone = currentUser?.phone || '+91 98230 44120';
+  const sAvatar = currentUser?.avatar_url || photos.student;
+
+  const pieSlices = [
+    { label: 'Problems Solved', value: solverDashboardData.pie_chart.problems_solved, color: '#16a34a' },
+    { label: 'Problems Ongoing', value: solverDashboardData.pie_chart.problems_ongoing, color: '#d97706' },
+    { label: 'Problems Failed', value: solverDashboardData.pie_chart.problems_failed, color: '#dc2626' }
+  ];
+
+  return `
+    <div class="section section-pad prd-dashboard-layout">
+      <!-- 4.1 Left Sidebar — Profile and Navigation -->
+      <aside class="prd-sidebar">
+        <div class="sidebar-profile">
+          <img class="sidebar-avatar" src="${sAvatar}" alt="${escapeHTML(sName)}">
+          <h2 class="sidebar-name">${escapeHTML(sName)}</h2>
+          <span class="tag" style="align-self: center;">Individual Solver</span>
+          <div class="sidebar-meta">📞 ${escapeHTML(sPhone)}</div>
+          <div class="sidebar-meta">✉ ${escapeHTML(sEmail)}</div>
+        </div>
+
+        <!-- Skills Section with Add / Remove -->
+        <div class="skills-editor">
+          <div class="eyebrow" style="margin-bottom: 4px;">SKILLS & DOMAINS</div>
+          <div class="skills-tags-wrap" id="solver-skills-wrap">
+            ${solverSkills.length ? solverSkills.map(s => `
+              <span class="editable-skill-tag">
+                ${escapeHTML(s.skill_name)}
+                <button type="button" data-action="remove-skill" data-skill-id="${s.id}" title="Remove skill">×</button>
+              </span>
+            `).join('') : `
+              <span class="editable-skill-tag">Python <button type="button" data-action="remove-skill" data-skill-id="demo-1">×</button></span>
+              <span class="editable-skill-tag">IoT <button type="button" data-action="remove-skill" data-skill-id="demo-2">×</button></span>
+              <span class="editable-skill-tag">GIS Mapping <button type="button" data-action="remove-skill" data-skill-id="demo-3">×</button></span>
+            `}
+          </div>
+          <div class="add-skill-inline">
+            <input id="new-skill-input" placeholder="New skill (e.g. React, Drone)...">
+            <button type="button" class="button button-outline" data-action="add-new-skill">+ Add</button>
+          </div>
+        </div>
+
+        <nav class="sidebar-nav-list">
+          <button type="button" class="sidebar-nav-btn active" data-scroll="challenges">
+            <span>🔨</span> Build (Explore Challenges)
+          </button>
+          <button type="button" class="sidebar-nav-btn" data-action="rewards-certifications">
+            <span>📜</span> Rewards and Certifications
+          </button>
+        </nav>
+      </aside>
+
+      <!-- 4.2 Main Dashboard — Problem Statistics -->
+      <main class="prd-main">
+        <div class="eyebrow">STUDENT PARTICIPATION RECORDS</div>
+        <h2>Problem Solving Statistics</h2>
+
+        <!-- Problem Statistics Pie Chart -->
+        <div class="pie-chart-card">
+          <div class="pie-chart-header">
+            <h3>Verified Problem Lifecycle Breakdown</h3>
+            <p style="margin: 0; font-size: 13px; color: var(--muted);">Real participation outcomes tracked across individual and team projects.</p>
+          </div>
+          ${renderSvgPieChart(pieSlices, 190)}
+        </div>
+
+        <!-- 4.3 Previous Work with 2 Tabs -->
+        <section class="previous-work-section" style="margin-top: 36px;">
+          <div class="eyebrow">PORTFOLIO & CONTRIBUTION HISTORY</div>
+          <h2>Previous Work</h2>
+
+          <div class="apply-tabs" style="margin-bottom: 20px;">
+            <button type="button" class="apply-tab-btn ${activeSolverWorkTab === 'individual' ? 'active' : ''}" data-solver-tab="individual">
+              Tab 1: Individual Participation
+            </button>
+            <button type="button" class="apply-tab-btn ${activeSolverWorkTab === 'team' ? 'active' : ''}" data-solver-tab="team">
+              Tab 2: Team Participation 👥
+            </button>
+          </div>
+
+          ${activeSolverWorkTab === 'individual' ? `
+            <!-- Individual Participation Cards -->
+            <div class="previous-work-list">
+              ${solverDashboardData.individual_projects.map(p => `
+                <article class="project-card reveal" style="margin-bottom: 16px;">
+                  <div class="project-content">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;">
+                      <div>
+                        <span class="tag">${escapeHTML(p.status)}</span>
+                        <h3 style="margin: 8px 0 4px;">${escapeHTML(p.title)}</h3>
+                      </div>
+                      <span class="muted-line" style="margin: 0;">Completed: ${escapeHTML(p.completion_date)}</span>
+                    </div>
+                    <p><strong>Problem Statement:</strong> ${escapeHTML(p.problem_statement)}</p>
+                    <p><strong>Proposed Solution:</strong> ${escapeHTML(p.solution_description)}</p>
+                    <div class="muted-line">Technologies: <strong>${escapeHTML(p.technologies_used)}</strong></div>
+                    ${p.rewards ? `<div class="muted-line" style="color: #15803d;">★ Recognition: <strong>${escapeHTML(p.rewards)}</strong></div>` : ''}
+                    <div style="margin-top: 10px;">
+                      <a href="${escapeHTML(p.project_links)}" target="_blank" rel="noopener" class="button button-outline" style="font-size: 12px; padding: 6px 14px;">
+                        View Project Docs ↗
+                      </a>
+                    </div>
+                  </div>
+                </article>
+              `).join('')}
+            </div>
+          ` : `
+            <!-- Team Participation Cards -->
+            <div class="previous-work-list">
+              ${solverDashboardData.team_projects.map(p => `
+                <article class="project-card reveal" style="margin-bottom: 16px;">
+                  <div class="project-content">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;">
+                      <div>
+                        <span class="tag">Team Project</span>
+                        <h3 style="margin: 8px 0 4px;">${escapeHTML(p.title)}</h3>
+                      </div>
+                      <span class="tag" style="background: rgba(34,197,94,0.1); color: #15803d;">${escapeHTML(p.status)}</span>
+                    </div>
+                    <p><strong>Team Name:</strong> ${escapeHTML(p.team_name)}</p>
+                    <p><strong>Team Members:</strong> ${escapeHTML(p.team_members)}</p>
+                    <p><strong>Your Role:</strong> ${escapeHTML(p.role)}</p>
+                    <p><strong>Project Outcome:</strong> ${escapeHTML(p.outcome)}</p>
+                    <div style="margin-top: 10px;">
+                      <a href="${escapeHTML(p.project_links)}" target="_blank" rel="noopener" class="button button-outline" style="font-size: 12px; padding: 6px 14px;">
+                        Project Repository & Deliverables ↗
+                      </a>
+                    </div>
+                  </div>
+                </article>
+              `).join('')}
+            </div>
+          `}
+        </section>
+      </main>
+    </div>`;
+}
+
+// PRD Section 5: Organisation Dashboard (Left Sidebar + Main Dashboard)
+function organisationPage() {
+  const orgName = orgDashboardData.org_name || 'COEP Technological University';
+  const aicte = orgDashboardData.aicte_code || '1-34891024';
+  const spocName = orgDashboardData.spoc_name || 'Dr. Vikram Mehta';
+  const spocEmail = orgDashboardData.spoc_email || 'vikram.mehta@ruraltech.org';
+  const orgAddress = orgDashboardData.address || 'Wellesley Rd, Shivajinagar, Pune, Maharashtra';
+  const orgLogo = orgDashboardData.logo_url || photos.school;
+
+  const pieSlices = [
+    { label: 'Solved by Students', value: orgDashboardData.pie_chart.solved_by_students, color: '#16a34a' },
+    { label: 'Solved by Collaborators', value: orgDashboardData.pie_chart.solved_by_collaborators, color: '#8b5cf6' }
+  ];
+
+  return `
+    <div class="section section-pad prd-dashboard-layout">
+      <!-- 5.1 Left Sidebar — Organisation Profile & Nav -->
+      <aside class="prd-sidebar">
+        <div class="sidebar-profile">
+          <img class="sidebar-avatar" src="${orgLogo}" alt="${escapeHTML(orgName)}" style="border-radius: 16px;">
+          <h2 class="sidebar-name">${escapeHTML(orgName)}</h2>
+          <span class="tag" style="align-self: center;">AICTE: ${escapeHTML(aicte)}</span>
+          <div class="sidebar-meta"><strong>SPOC:</strong> ${escapeHTML(spocName)}</div>
+          <div class="sidebar-meta">✉ ${escapeHTML(spocEmail)}</div>
+          <div class="sidebar-meta">⌖ ${escapeHTML(orgAddress)}</div>
+        </div>
+
+        <nav class="sidebar-nav-list">
+          <button type="button" class="sidebar-nav-btn ${activeOrgTab === 'Overview' ? 'active' : ''}" data-org-nav="Overview">
+            <span>⌂</span> Overview
+          </button>
+          <button type="button" class="sidebar-nav-btn ${activeOrgTab === 'List of Students' ? 'active' : ''}" data-org-nav="List of Students">
+            <span>👥</span> List of Students
+          </button>
+          <button type="button" class="sidebar-nav-btn ${activeOrgTab === 'List of Collaborators' ? 'active' : ''}" data-org-nav="List of Collaborators">
+            <span>🤝</span> List of Collaborators
+          </button>
+          <button type="button" class="sidebar-nav-btn ${activeOrgTab === 'Previous Projects' ? 'active' : ''}" data-org-nav="Previous Projects">
+            <span>📁</span> Previous Projects
+          </button>
+        </nav>
+      </aside>
+
+      <!-- Main Content Area -->
+      <main class="prd-main">
+        ${activeOrgTab === 'Overview' ? renderOrgOverview(pieSlices) : ''}
+        ${activeOrgTab === 'List of Students' ? renderStudentDirectory() : ''}
+        ${activeOrgTab === 'List of Collaborators' ? renderCollaboratorsList() : ''}
+        ${activeOrgTab === 'Previous Projects' ? renderOrgPreviousProjects() : ''}
+      </main>
+    </div>`;
+}
+
+// 5.2 Organisation Main Dashboard — Overview & Project Statistics
+function renderOrgOverview(pieSlices: { label: string; value: number; color: string }[]) {
+  return `
+    <div class="eyebrow">INSTITUTIONAL PROJECT PERFORMANCE</div>
+    <h2>Project Statistics & Resolution Breakdown</h2>
+
+    <!-- Pie Chart (Solved by Students vs Solved by Collaborators) -->
+    <div class="pie-chart-card">
+      <div class="pie-chart-header">
+        <h3>Attribution of Solved Societal Challenges</h3>
+        <p style="margin: 0; font-size: 13px; color: var(--muted);">Direct attribution calculated from verified student and external collaborator completions.</p>
+      </div>
+      ${renderSvgPieChart(pieSlices, 190)}
+    </div>
+
+    <!-- 5.3 Previous Projects Preview -->
+    ${renderOrgPreviousProjects()}`;
+}
+
+// PRD Section 6: Organisation Student Directory (`List of Students`)
+function renderStudentDirectory() {
+  const students = studentDirectory;
+
+  return `
+    <div class="eyebrow">RESTRICTED CAMPUS LEDGER</div>
+    <h2>Associated Student Directory</h2>
+    <p style="color: var(--muted); font-size: 14px;">Authorized directory for institutional student solvers. Track verified problem counts and roll numbers.</p>
+
+    <!-- Search & Sorting Toolbar -->
+    <div style="display: flex; gap: 12px; margin: 20px 0 16px; flex-wrap: wrap;">
+      <input 
+        id="directory-search-input" 
+        value="${escapeHTML(directorySearchQuery)}" 
+        placeholder="Search by student name or roll number..." 
+        style="flex: 1; min-width: 240px; padding: 10px 14px; border-radius: 10px; border: 1px solid var(--line); background: var(--card);">
+      
+      <select id="directory-sort-select" style="padding: 10px 14px; border-radius: 10px; border: 1px solid var(--line); background: var(--card); font-weight: 600;">
+        <option value="name" ${directorySortBy === 'name' ? 'selected' : ''}>Sort by: Student Name</option>
+        <option value="solved" ${directorySortBy === 'solved' ? 'selected' : ''}>Sort by: Successfully Solved</option>
+        <option value="ongoing" ${directorySortBy === 'ongoing' ? 'selected' : ''}>Sort by: Ongoing Problems</option>
+        <option value="unsuccessful" ${directorySortBy === 'unsuccessful' ? 'selected' : ''}>Sort by: Unsuccessful</option>
+      </select>
+    </div>
+
+    <!-- 6.1 Student Directory Table (4 Primary Columns) -->
+    <div class="directory-table-wrap">
+      <table class="directory-table">
+        <thead>
+          <tr>
+            <th>Student Name</th>
+            <th>Successfully Solved Problems</th>
+            <th>Unsuccessful Problems</th>
+            <th>Ongoing Problems</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${students.length ? students.map(s => `
+            <tr style="cursor: pointer;" data-action="open-student-detail" data-student-id="${s.id}">
+              <td>
+                <div class="student-name-col">
+                  <span class="student-name-text">${escapeHTML(s.full_name)}</span>
+                  <!-- Roll number directly below name in smaller secondary text -->
+                  <span class="student-roll-text">${escapeHTML(s.roll_number)}</span>
+                </div>
+              </td>
+              <td><span class="count-badge count-solved">${s.solved_count}</span></td>
+              <td><span class="count-badge count-unsuccessful">${s.unsuccessful_count}</span></td>
+              <td><span class="count-badge count-ongoing">${s.ongoing_count}</span></td>
+            </tr>
+          `).join('') : `
+            <tr>
+              <td colspan="4" style="text-align: center; padding: 32px; color: var(--muted);">
+                No students found matching your criteria.
+              </td>
+            </tr>
+          `}
+        </tbody>
+      </table>
+    </div>`;
+}
+
+// 5.3 Previous Projects List for Organisation with Filters
+function renderOrgPreviousProjects() {
+  const allProjects = orgDashboardData.previous_projects || [];
+  const filtered = allProjects.filter((p: any) => orgProjectFilter === 'All' || p.status === orgProjectFilter);
+
+  return `
+    <section style="margin-top: 24px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;">
         <div>
-          <h2>Every improvement starts with evidence.</h2>
-          <p>Share the location and impact so the right people can help.</p>
+          <div class="eyebrow">CAMPUS IMPACT HISTORY</div>
+          <h2 style="margin: 0;">Previous Projects</h2>
         </div>
-        <img src="${photos.community}" alt="Community members working together">
-      </div>
-
-      <div class="stats-grid">
-        <div class="stat"><strong>${6 + liveProblems.length}</strong><small>LOGGED</small></div>
-        <div class="stat"><strong>${liveProblems.filter(p => p.is_taken).length}</strong><small>MATCHED</small></div>
-        <div class="stat"><strong>3</strong><small>IN FIELD</small></div>
-        <div class="stat"><strong>1</strong><small>VERIFIED</small></div>
-      </div>
-
-      <div class="notice">
-        <div class="eyebrow">CIVIC LEDGER</div>
-        <p>Document local problems with clear evidence so the right teams can help. Avoid sharing personal or sensitive information publicly.</p>
-      </div>
-
-      <form id="issue-form" class="form-panel">
-        <div class="form-heading">SUBMIT A CIVIC PROBLEM</div>
-
-        <label class="field">Problem title<input name="title" required placeholder="What needs to be solved?"></label>
-
-        <div class="field-grid">
-          <label class="field">Category
-            <select name="category">
-              <option>Environment & sanitation</option>
-              <option>Education</option>
-              <option>Infrastructure</option>
-              <option>Transport</option>
-              <option>Healthcare</option>
-              <option>Accessibility</option>
-              <option>Digital learning</option>
-              <option>Public lighting</option>
-              <option>Water</option>
-              <option>Food security</option>
-              <option>Other</option>
-            </select>
-          </label>
-          <label class="field">Urgency
-            <select name="urgency">
-              <option value="Normal">Normal</option>
-              <option value="Time-sensitive">Time-sensitive</option>
-              <option value="Urgent">Urgent</option>
-            </select>
-          </label>
+        <!-- Filters: Completed, Ongoing, Unsuccessful -->
+        <div class="filter-row" style="margin: 0;">
+          ${['All', 'completed', 'ongoing', 'unsuccessful'].map(f => `
+            <button class="filter-chip ${orgProjectFilter === f ? 'selected' : ''}" data-org-project-filter="${f}">
+              ${f.charAt(0).toUpperCase() + f.slice(1)}
+            </button>
+          `).join('')}
         </div>
+      </div>
 
-        <label class="field">Location<input name="location" required placeholder="Ward, street or landmark"></label>
-        <label class="field">Short description<textarea name="description" required rows="3" placeholder="Describe the issue and its impact"></textarea></label>
-        <label class="field">Expected outcomes (optional)<input name="expected_outcomes" placeholder="Link to a photo or public report"></label>
-
-        <button class="button button-dark full" type="submit" id="issue-submit-btn">Submit Problem →</button>
-      </form>
-
-      <h2>Your Published Problems</h2>
-      <div class="challenge-list">
-        ${liveProblems.slice(0, 3).map(challengeCard).join('')}
+      <div class="previous-work-list">
+        ${filtered.length ? filtered.map((p: any) => `
+          <article class="project-card reveal" style="margin-bottom: 16px;">
+            <div class="project-content">
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;">
+                <div>
+                  <span class="tag ${p.status === 'completed' ? 'count-solved' : (p.status === 'ongoing' ? 'count-ongoing' : 'count-unsuccessful')}">
+                    ${escapeHTML(p.status.toUpperCase())}
+                  </span>
+                  <h3 style="margin: 8px 0 4px;">${escapeHTML(p.title)}</h3>
+                </div>
+                <span class="muted-line" style="margin: 0;">${escapeHTML(p.completion_date)}</span>
+              </div>
+              <p><strong>Problem Statement:</strong> ${escapeHTML(p.problem_statement)}</p>
+              <p><strong>Participating Students / Collaborators:</strong> ${escapeHTML(p.participants)}</p>
+              <p><strong>Solution Summary:</strong> ${escapeHTML(p.solution_summary)}</p>
+              ${p.recognition ? `<div class="muted-line" style="color: #15803d;">★ Recognition: <strong>${escapeHTML(p.recognition)}</strong></div>` : ''}
+              <div style="margin-top: 10px;">
+                <a href="${escapeHTML(p.supporting_docs)}" target="_blank" rel="noopener" class="button button-outline" style="font-size: 12px; padding: 6px 14px;">
+                  Supporting Docs & Project Links ↗
+                </a>
+              </div>
+            </div>
+          </article>
+        `).join('') : `
+          <div class="empty-state"><span>📁</span><b>No projects in this category.</b></div>
+        `}
       </div>
     </section>`;
 }
 
-function solverPage() {
-  const solverName = currentUser?.full_name || 'Priya Sharma';
-  const solverDept = 'B.Tech Environmental Engineering · Year 4';
-  const solverCollege = 'Delhi Technological University';
+// 5.1 Collaborators Directory
+function renderCollaboratorsList() {
+  const collaborators = orgDashboardData.collaborators || [];
+  return `
+    <div class="eyebrow">EXTERNAL PARTNERSHIPS</div>
+    <h2>List of Collaborators & Mentors</h2>
+    <div class="previous-work-list" style="margin-top: 20px;">
+      ${collaborators.map((c: any) => `
+        <article class="project-card reveal" style="margin-bottom: 14px;">
+          <div class="project-content">
+            <span class="tag">${escapeHTML(c.role)}</span>
+            <h3 style="margin: 8px 0 4px;">${escapeHTML(c.name)}</h3>
+            <p>Active Joint Projects: <strong>${c.projects}</strong> verified civic sprints</p>
+          </div>
+        </article>
+      `).join('')}
+    </div>`;
+}
+
+// Student Detail Modal
+function studentDetailModal() {
+  if (!studentDetailModalOpen || !selectedStudentForModal) return '';
+  const s = selectedStudentForModal;
 
   return `
-    <section class="section section-pad dashboard">
-      <div class="eyebrow">STUDENT SOLVER · DEMO PROFILE</div>
-      <div class="profile-heading">
-        <img class="avatar" src="${photos.student}" alt="Student profile">
-        <div>
-          <h1 class="small-title">${escapeHTML(solverName)}</h1>
-          <p>${escapeHTML(solverDept)}</p>
-          <p>${escapeHTML(solverCollege)}</p>
-        </div>
-      </div>
-
-      <div class="skills-row">
-        <span class="tag">Environmental Engineering</span>
-        <span class="tag">GIS Mapping</span>
-        <span class="tag">IoT</span>
-        <span class="tag">Field Research</span>
-      </div>
-
-      <div class="stats-grid">
-        <div class="stat"><strong>4</strong><small>ISSUES RESOLVED</small></div>
-        <div class="stat"><strong>120 hrs</strong><small>FIELD IMPACT</small></div>
-        <div class="stat"><strong>₹65k</strong><small>GRANTS MANAGED</small></div>
-        <div class="stat"><strong>12</strong><small>CIVIC CONTRIBUTIONS</small></div>
-      </div>
-    </section>
-
-    <section class="section section-pad tinted">
-      <div class="eyebrow">ACTIVE ENGINEERING SPRINT</div>
-      <h2>Current deployment</h2>
-      <article class="project-card reveal">
-        <img class="wide-image" src="${photos.field}" alt="Community field project">
-        <div class="project-content">
-          <div class="status-indicator taken">
-            <span class="dot red-dot"></span>
-            <span>Sprint In Progress</span>
-          </div>
-          <h3>Neighbourhood waste mapping pilot</h3>
-          <p>Community-led · Civic environment</p>
-          <div class="progress-block">
-            <div class="progress-header">
-              <span>Sprint Progress</span>
-              <span>92%</span>
-            </div>
-            <div class="progress-bar-wrap">
-              <div class="progress-bar-fill" style="width: 92%"></div>
-            </div>
-            <span class="progress-note">Milestone 3 of 3 · Awaiting final review.</span>
+    <div class="modal-backdrop" data-action="close-student-modal">
+      <div class="apply-modal-box" role="dialog" aria-modal="true">
+        <button class="modal-close" data-action="close-student-modal" aria-label="Close modal">×</button>
+        <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 16px;">
+          <img src="${s.avatar_url}" alt="${escapeHTML(s.full_name)}" style="width: 64px; height: 64px; border-radius: 50%; border: 2px solid var(--brown);">
+          <div>
+            <h2 style="margin: 0;">${escapeHTML(s.full_name)}</h2>
+            <div style="font-size: 13px; color: var(--muted); font-weight: 600;">Roll Number: ${escapeHTML(s.roll_number)}</div>
+            <div style="font-size: 12px; color: var(--muted);">${escapeHTML(s.college_name)}</div>
           </div>
         </div>
-      </article>
-    </section>
 
-    <section class="section section-pad">
-      <div class="eyebrow">DISCOVER CIVIC CHALLENGES</div>
-      <h2>Find your next project</h2>
-      <p>Choose a challenge that matches your skills and curiosity.</p>
-      <div class="challenge-list">
-        ${liveProblems.filter(p => !p.is_taken).slice(0, 3).map(challengeCard).join('')}
+        <div class="stats-grid" style="margin-bottom: 20px;">
+          <div class="stat"><strong style="color:#16a34a">${s.solved_count}</strong><small>SOLVED</small></div>
+          <div class="stat"><strong style="color:#d97706">${s.ongoing_count}</strong><small>ONGOING</small></div>
+          <div class="stat"><strong style="color:#dc2626">${s.unsuccessful_count}</strong><small>UNSUCCESSFUL</small></div>
+        </div>
+
+        <h4>Verified Skills & Technologies</h4>
+        <div class="chips" style="margin-bottom: 16px;">
+          ${s.skills.map(sk => `<span class="tag">${escapeHTML(sk)}</span>`).join('')}
+        </div>
+
+        <h4>Institutional Contact Information</h4>
+        <p style="font-size: 13px; margin: 4px 0;">✉ Email: <a href="mailto:${escapeHTML(s.email)}">${escapeHTML(s.email)}</a></p>
+        <p style="font-size: 13px; margin: 4px 0;">📞 Phone: ${escapeHTML(s.phone)}</p>
       </div>
-    </section>`;
+    </div>`;
 }
 
 function applyModal() {
@@ -670,6 +1160,7 @@ function render() {
     <footer class="footer"><p>Real problems. Verified solutions.</p><small>© 2026 · Civic Innovation Platform</small></footer>
     ${nav()}
     ${applyModal()}
+    ${studentDetailModal()}
     <div class="toast" id="toast" aria-live="polite"></div>`;
 
   setupRevealAnimations();
@@ -718,23 +1209,20 @@ document.addEventListener('click', async event => {
 
   const viewButton = target.closest<HTMLElement>('[data-view]');
   const actionButton = target.closest<HTMLElement>('[data-action]');
-  const tabButton = target.closest<HTMLElement>('[data-tab]');
   const scrollButton = target.closest<HTMLElement>('[data-scroll]');
   const authButton = target.closest<HTMLElement>('[data-auth-mode]');
   const filterButton = target.closest<HTMLElement>('[data-filter]');
   const openApplyBtn = target.closest<HTMLElement>('[data-open-apply]');
   const applyTabBtn = target.closest<HTMLElement>('[data-apply-tab]');
+  const solverRegTabBtn = target.closest<HTMLElement>('[data-solver-reg-tab]');
+  const orgNavBtn = target.closest<HTMLElement>('[data-org-nav]');
+  const solverTabBtn = target.closest<HTMLElement>('[data-solver-tab]');
+  const orgProjFilterBtn = target.closest<HTMLElement>('[data-org-project-filter]');
   const demoBtn = target.closest<HTMLElement>('[data-demo-email]');
 
   if (viewButton) {
     event.preventDefault();
     go(viewButton.dataset.view as View);
-    return;
-  }
-
-  if (tabButton) {
-    activeTab = tabButton.dataset.tab || 'Overview';
-    render();
     return;
   }
 
@@ -747,13 +1235,12 @@ document.addEventListener('click', async event => {
       });
     };
 
-    if (currentView !== 'home' || !document.getElementById(sectionId)) {
+    if (currentView === 'home' || document.getElementById(sectionId)) {
+      scrollToSection();
+    } else {
       currentView = 'home';
-      modalOpen = false;
       render();
       window.requestAnimationFrame(scrollToSection);
-    } else {
-      scrollToSection();
     }
     return;
   }
@@ -774,6 +1261,47 @@ document.addEventListener('click', async event => {
     return;
   }
 
+  // Solver Registration Tabs (Individual vs Organisation)
+  if (solverRegTabBtn) {
+    solverRegTab = solverRegTabBtn.dataset.solverRegTab as SolverRegType;
+    render();
+    return;
+  }
+
+  // Organisation Nav Tabs
+  if (orgNavBtn) {
+    activeOrgTab = orgNavBtn.dataset.orgNav || 'Overview';
+    render();
+    return;
+  }
+
+  // Solver Previous Work Tabs
+  if (solverTabBtn) {
+    activeSolverWorkTab = solverTabBtn.dataset.solverTab || 'individual';
+    render();
+    return;
+  }
+
+  // Organisation Project Filter
+  if (orgProjFilterBtn) {
+    orgProjectFilter = orgProjFilterBtn.dataset.orgProjectFilter || 'All';
+    render();
+    return;
+  }
+
+  // Open Student Detail Modal
+  const studentRow = target.closest<HTMLElement>('[data-student-id]');
+  if (studentRow && target.closest('[data-action="open-student-detail"]')) {
+    const sId = studentRow.dataset.studentId;
+    const found = studentDirectory.find(s => s.id === sId);
+    if (found) {
+      selectedStudentForModal = found;
+      studentDetailModalOpen = true;
+      render();
+    }
+    return;
+  }
+
   // 1-Click Persona Sign-In Click
   if (demoBtn) {
     const email = demoBtn.dataset.demoEmail;
@@ -786,6 +1314,7 @@ document.addEventListener('click', async event => {
         if (res.user.role === 'provider') go('provider');
         else if (res.user.role === 'organization' || res.user.role === 'institution' || res.user.role === 'admin') go('organisation');
         else go('solver');
+        initAppData();
       } catch (err: any) {
         authError = err.message || 'Login failed';
         showToast(`Login failed: ${authError}`);
@@ -816,9 +1345,58 @@ document.addEventListener('click', async event => {
     return;
   }
 
-  // Add/Remove Team Member in Modal
+  // Action Buttons
   if (actionButton) {
     const action = actionButton.dataset.action;
+
+    if (action === 'request-login-otp' || action === 'request-aadhaar-otp' || action === 'request-phone-otp') {
+      showToast('OTP verification code sent! (Use demo code: 123456)');
+      return;
+    }
+
+    if (action === 'forgot-password') {
+      const email = prompt('Enter your registered email or phone for recovery:');
+      if (email) {
+        showToast(`Password recovery instructions sent to ${email}`);
+      }
+      return;
+    }
+
+    if (action === 'rewards-recognition' || action === 'rewards-certifications') {
+      showToast('Verified Achievement Ledger: 4 certificates and 1 state citation issued.');
+      return;
+    }
+
+    if (action === 'add-new-skill') {
+      const input = document.getElementById('new-skill-input') as HTMLInputElement;
+      if (input && input.value.trim()) {
+        try {
+          const res = await ApiClient.addSkill(input.value.trim());
+          solverSkills.push(res);
+          showToast(`Skill added: ${input.value.trim()}`);
+          input.value = '';
+          render();
+        } catch {
+          solverSkills.push({ id: `sk-${Date.now()}`, skill_name: input.value.trim() });
+          showToast(`Skill added: ${input.value.trim()}`);
+          input.value = '';
+          render();
+        }
+      }
+      return;
+    }
+
+    if (action === 'remove-skill') {
+      const skillId = actionButton.dataset.skillId;
+      if (skillId) {
+        await ApiClient.deleteSkill(skillId).catch(() => {});
+        solverSkills = solverSkills.filter(s => s.id !== skillId);
+        showToast('Skill removed.');
+        render();
+      }
+      return;
+    }
+
     if (action === 'add-member') {
       teamMembers.push({ name: '', email: '' });
       render();
@@ -833,6 +1411,12 @@ document.addEventListener('click', async event => {
     if (action === 'close-apply-modal') {
       if (target.closest('.apply-modal-box') && !target.closest('.modal-close')) return;
       applyModalOpen = false;
+      render();
+      return;
+    }
+    if (action === 'close-student-modal') {
+      if (target.closest('.apply-modal-box') && !target.closest('.modal-close')) return;
+      studentDetailModalOpen = false;
       render();
       return;
     }
@@ -859,9 +1443,27 @@ document.addEventListener('click', async event => {
 
 document.addEventListener('change', event => {
   const target = event.target as HTMLInputElement;
-  if (target.name === 'role') {
+  if (target.name === 'account_type') {
     selectedRole = target.value as Role;
     render();
+  }
+  if (target.id === 'directory-sort-select') {
+    directorySortBy = target.value;
+    ApiClient.getOrgStudents(directorySearchQuery, directorySortBy).then(stus => {
+      studentDirectory = stus;
+      render();
+    });
+  }
+});
+
+document.addEventListener('input', event => {
+  const target = event.target as HTMLInputElement;
+  if (target.id === 'directory-search-input') {
+    directorySearchQuery = target.value;
+    ApiClient.getOrgStudents(directorySearchQuery, directorySortBy).then(stus => {
+      studentDirectory = stus;
+      render();
+    });
   }
 });
 
@@ -871,10 +1473,11 @@ document.addEventListener('submit', async event => {
   const form = event.target as HTMLFormElement;
   const data = new FormData(form);
 
-  // Authentication Form Submit (Login & Register)
-  if (form.id === 'register-form' || form.id === 'auth-form') {
-    const email = String(data.get('email') || '').trim();
+  // Login Form Submit
+  if (form.id === 'login-form') {
+    const identifier = String(data.get('identifier') || '').trim();
     const password = String(data.get('password') || '');
+    const otp = String(data.get('otp') || '');
     const submitBtn = document.getElementById('auth-submit-btn') as HTMLButtonElement;
     if (submitBtn) {
       submitBtn.disabled = true;
@@ -883,38 +1486,91 @@ document.addEventListener('submit', async event => {
     authError = '';
 
     try {
-      if (authMode === 'login') {
-        const res = await ApiClient.login(email, password);
-        currentUser = res.user;
-        showToast(`Welcome back, ${res.user.full_name}!`);
-        if (res.user.role === 'provider') go('provider');
-        else if (res.user.role === 'organization' || res.user.role === 'institution' || res.user.role === 'admin') go('organisation');
-        else go('solver');
-      } else {
-        const name = String(data.get('name') || '');
-        const role = selectedRole === 'organisation' ? 'organization' : selectedRole;
-        const res = await ApiClient.register({
-          email,
-          password,
-          full_name: name,
-          role,
-          skills: data.get('skills') ? String(data.get('skills')).split(',').map(s => s.trim()) : undefined,
-          department: String(data.get('course') || ''),
-          year_of_study: Number(data.get('year') || 1)
-        });
-        currentUser = res.user;
-        showToast(`Account created for ${res.user.full_name}!`);
-        if (role === 'provider') go('provider');
-        else if (role === 'organization') go('organisation');
-        else go('solver');
-      }
+      const res = await ApiClient.login(identifier, password, otp);
+      currentUser = res.user;
+      showToast(`Welcome, ${res.user.full_name}!`);
+      if (res.user.role === 'provider') go('provider');
+      else if (res.user.role === 'organization' || res.user.role === 'institution' || res.user.role === 'admin') go('organisation');
+      else go('solver');
+      initAppData();
     } catch (err: any) {
-      authError = err.message || 'Authentication failed. Please verify credentials.';
+      authError = err.message || 'Incorrect credentials or unverified account.';
       render();
     } finally {
       if (submitBtn) {
         submitBtn.disabled = false;
-        submitBtn.textContent = authMode === 'login' ? 'Continue to Workspace →' : 'Create account & continue →';
+        submitBtn.textContent = 'Login to Workspace →';
+      }
+    }
+    return;
+  }
+
+  // Registration Form Submit
+  if (form.id === 'register-form') {
+    const pw = String(data.get('password') || '');
+    const cpw = String(data.get('confirm_password') || '');
+
+    if (pw !== cpw) {
+      authError = 'Passwords do not match. Please re-enter passwords.';
+      render();
+      return;
+    }
+
+    const email = String(data.get('email') || '').trim();
+    const fullName = String(data.get('full_name') || '').trim();
+    const phone = String(data.get('phone') || '').trim();
+    const address = String(data.get('address') || '');
+    const aadhaar = String(data.get('aadhaar_number') || '');
+    const college = String(data.get('college_name') || '');
+    const roll = String(data.get('roll_number') || '');
+    const aicte = String(data.get('aicte_code') || '');
+    const spocName = String(data.get('spoc_name') || '');
+    const spocPhone = String(data.get('spoc_phone') || '');
+    const avatar = String(data.get('avatar_url') || data.get('logo_url') || '');
+
+    let role = selectedRole;
+    if (selectedRole === 'solver' && solverRegTab === 'organisation') {
+      role = 'organisation';
+    }
+
+    const submitBtn = document.getElementById('auth-submit-btn') as HTMLButtonElement;
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Creating Account...';
+    }
+    authError = '';
+
+    try {
+      const res = await ApiClient.register({
+        email,
+        password: pw,
+        full_name: fullName,
+        role: role === 'organisation' ? 'organization' : role,
+        phone,
+        address,
+        aadhaar_number: aadhaar,
+        roll_number: roll,
+        college_name: college,
+        aicte_code: aicte,
+        spoc_name: spocName,
+        spoc_phone: spocPhone,
+        avatar_url: avatar,
+        skills: data.get('skills') ? String(data.get('skills')).split(',').map(s => s.trim()) : undefined
+      });
+
+      currentUser = res.user;
+      showToast(`Account successfully created for ${res.user.full_name}!`);
+      if (res.user.role === 'provider') go('provider');
+      else if (res.user.role === 'organization') go('organisation');
+      else go('solver');
+      initAppData();
+    } catch (err: any) {
+      authError = err.message || 'Registration failed. Please check required fields.';
+      render();
+    } finally {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Create Account & Continue →';
       }
     }
     return;
@@ -923,7 +1579,7 @@ document.addEventListener('submit', async event => {
   // Provider Problem Submit
   if (form.id === 'issue-form') {
     const title = String(data.get('title') || '').trim();
-    const category = String(data.get('category') || 'Environment & sanitation');
+    const category = String(data.get('category') || 'Water Supply');
     const urgency = String(data.get('urgency') || 'Normal');
     const location = String(data.get('location') || '').trim();
     const description = String(data.get('description') || '').trim();
@@ -946,6 +1602,7 @@ document.addEventListener('submit', async event => {
       });
 
       liveProblems.unshift(newProb);
+      providerStats.stats.total_submitted += 1;
       showToast('Problem submitted! AI has generated requirements & skills analysis.');
       go('provider');
     } catch (err: any) {
@@ -953,7 +1610,7 @@ document.addEventListener('submit', async event => {
     } finally {
       if (submitBtn) {
         submitBtn.disabled = false;
-        submitBtn.textContent = 'Submit Problem →';
+        submitBtn.textContent = 'Submit Challenge to AI Analysis →';
       }
     }
     return;
@@ -997,7 +1654,6 @@ document.addEventListener('submit', async event => {
     try {
       await ApiClient.applyToProblem(problemId, teamPayload);
       
-      // Update local problem status immediately
       const targetProb = liveProblems.find(p => p.id === problemId);
       if (targetProb) {
         targetProb.is_taken = true;
@@ -1026,5 +1682,5 @@ document.addEventListener('submit', async event => {
   }
 });
 
-// Boot the app
+// Boot the application
 initAppData();
