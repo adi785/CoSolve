@@ -39,7 +39,7 @@ def test_team_application_and_email_dispatch():
     finally:
         db.close()
 
-    # 3. Apply as a College Team
+    # 3. Apply as a Team
     app_payload = {
         "problem_id": problem_id,
         "solver_type": "team",

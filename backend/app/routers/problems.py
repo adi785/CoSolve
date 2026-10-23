@@ -8,6 +8,7 @@ from sqlalchemy import or_
 from backend.app.database import get_db
 from backend.app.models.problem import Problem, AIProblemAnalysis
 from backend.app.models.project import Project
+from backend.app.models.application import Application
 from backend.app.models.user import Profile
 from backend.app.schemas.api_schemas import (
     ProblemCreate,

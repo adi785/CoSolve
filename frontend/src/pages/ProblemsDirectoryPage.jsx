@@ -195,34 +195,34 @@ export const ProblemsDirectoryPage = ({ navigate }) => {
 
                   {/* Challenge Progress & Inactivity Insight Block */}
                   {prob.is_taken ? (
-                    <div className="p-3 bg-amber-50/90 border border-amber-200 rounded-xl space-y-2">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-1.5">
-                          <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
-                          <span className="font-bold text-amber-900 text-[11px] tracking-wide uppercase">
-                            TAKEN • IN PROGRESS
+                    <div className="p-3 bg-rose-50/80 border border-rose-300 rounded-xl space-y-2">
+                      <div className="flex items-center justify-between text-xs">
+                        <div className="flex items-center space-x-2">
+                          <span className="w-2.5 h-2.5 rounded-full bg-rose-600 shrink-0" />
+                          <span className="font-bold text-rose-950 text-xs tracking-wide">
+                            NOT AVAILABLE • TAKEN
                           </span>
                         </div>
-                        <span className="font-extrabold text-amber-950 text-xs">
-                          {Math.round(prob.progress_percentage || 0)}%
+                        <span className="text-xs font-bold text-rose-700">
+                          {Math.round(prob.progress_percentage || 0)}% Progress
                         </span>
                       </div>
 
                       {/* Progress Bar */}
-                      <div className="w-full bg-amber-200/70 rounded-full h-1.5 overflow-hidden">
+                      <div className="w-full bg-rose-200/70 rounded-full h-1.5 overflow-hidden">
                         <div
-                          className="bg-amber-600 h-1.5 rounded-full transition-all"
-                          style={{ width: `${Math.min(100, Math.max(5, prob.progress_percentage || 0))}%` }}
+                          className="bg-rose-600 h-1.5 rounded-full transition-all"
+                          style={{ width: `${Math.min(100, Math.max(5, prob.progress_percentage || 10))}%` }}
                         />
                       </div>
 
-                      <div className="flex items-center justify-between text-[10px] text-amber-900 pt-0.5">
-                        <span className="truncate max-w-[140px]">
-                          Solver: <strong>{prob.taken_by || 'Assigned Solver'}</strong>
+                      <div className="flex items-center justify-between text-[10px] text-rose-900 pt-0.5">
+                        <span className="truncate max-w-[150px]">
+                          Registered: <strong>{prob.taken_by || 'Assigned Solver'}</strong>
                         </span>
                         <span>
                           {prob.days_until_inactivity_warning <= 2 ? (
-                            <span className="text-red-700 font-bold">Auto-reopens in {prob.days_until_inactivity_warning}d</span>
+                            <span className="text-rose-700 font-bold">Auto-reopens in {prob.days_until_inactivity_warning}d</span>
                           ) : (
                             <span>Active {prob.last_activity_days_ago === 0 ? 'today' : `${prob.last_activity_days_ago}d ago`}</span>
                           )}
@@ -230,14 +230,14 @@ export const ProblemsDirectoryPage = ({ navigate }) => {
                       </div>
                     </div>
                   ) : (
-                    <div className="p-2.5 bg-emerald-50/80 border border-emerald-200 rounded-xl flex items-center justify-between text-xs">
-                      <div className="flex items-center space-x-1.5">
-                        <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                        <span className="font-bold text-emerald-900 text-[11px] tracking-wide uppercase">
+                    <div className="p-3 bg-emerald-50/80 border border-emerald-300 rounded-xl flex items-center justify-between text-xs">
+                      <div className="flex items-center space-x-2">
+                        <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0" />
+                        <span className="font-bold text-emerald-950 text-xs tracking-wide">
                           AVAILABLE • NOT TAKEN
                         </span>
                       </div>
-                      <span className="text-[10px] text-emerald-700 font-medium">Individual or Team</span>
+                      <span className="text-xs font-semibold text-emerald-700">Individual or Team</span>
                     </div>
                   )}
 

@@ -225,36 +225,36 @@ export const ProblemDetailPage = ({ problemId, navigate }) => {
 
         {/* Project Status & Progress Insight Banner */}
         {problem.is_taken ? (
-          <div className="p-4 bg-amber-50/90 border border-amber-200 rounded-2xl space-y-2.5">
+          <div className="p-4 bg-rose-50/80 border border-rose-300 rounded-2xl space-y-2.5">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center space-x-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse" />
-                <span className="font-extrabold text-amber-950 text-xs tracking-wide uppercase">
-                  PROJECT TAKEN • IN PROGRESS
+                <span className="w-2.5 h-2.5 rounded-full bg-rose-600 shrink-0" />
+                <span className="font-bold text-rose-950 text-xs tracking-wide">
+                  NOT AVAILABLE • TAKEN
                 </span>
               </div>
-              <span className="text-xs font-black text-amber-950 bg-amber-100 border border-amber-300 px-2.5 py-0.5 rounded-full">
-                {Math.round(problem.progress_percentage || 0)}% Complete
+              <span className="text-xs font-bold text-rose-800 bg-rose-100 border border-rose-300 px-2.5 py-0.5 rounded-full">
+                {Math.round(problem.progress_percentage || 0)}% Progress
               </span>
             </div>
 
             {/* Progress Bar */}
-            <div className="w-full bg-amber-200/70 rounded-full h-2 overflow-hidden">
+            <div className="w-full bg-rose-200/70 rounded-full h-2 overflow-hidden">
               <div
-                className="bg-amber-600 h-2 rounded-full transition-all"
-                style={{ width: `${Math.min(100, Math.max(5, problem.progress_percentage || 0))}%` }}
+                className="bg-rose-600 h-2 rounded-full transition-all"
+                style={{ width: `${Math.min(100, Math.max(5, problem.progress_percentage || 10))}%` }}
               />
             </div>
 
-            <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-amber-900 pt-1">
+            <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-rose-900 pt-1">
               <div>
-                <span>Assigned Solver / Team: </span>
-                <strong className="text-amber-950">{problem.taken_by || 'Assigned Solver'}</strong>
-                {problem.solver_type && <span className="ml-1 text-[10px] text-amber-700 capitalize">({problem.solver_type})</span>}
+                <span>Registered Solver / Team: </span>
+                <strong className="text-rose-950">{problem.taken_by || 'Assigned Solver'}</strong>
+                {problem.solver_type && <span className="ml-1 text-[10px] text-rose-700 capitalize">({problem.solver_type})</span>}
               </div>
               <div>
                 {problem.days_until_inactivity_warning <= 2 ? (
-                  <span className="text-red-700 font-bold bg-red-100 px-2 py-0.5 rounded">
+                  <span className="text-rose-700 font-bold bg-rose-100 px-2 py-0.5 rounded">
                     Re-opens in {problem.days_until_inactivity_warning} days if inactive
                   </span>
                 ) : (
@@ -264,15 +264,15 @@ export const ProblemDetailPage = ({ problemId, navigate }) => {
             </div>
           </div>
         ) : (
-          <div className="p-3 bg-emerald-50/80 border border-emerald-200 rounded-2xl flex items-center justify-between text-xs">
+          <div className="p-3 bg-emerald-50/80 border border-emerald-300 rounded-2xl flex items-center justify-between text-xs">
             <div className="flex items-center space-x-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-              <span className="font-bold text-emerald-950 text-xs tracking-wide uppercase">
-                AVAILABLE • OPEN FOR SOLVERS
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0" />
+              <span className="font-bold text-emerald-950 text-xs tracking-wide">
+                AVAILABLE • NOT TAKEN
               </span>
             </div>
-            <span className="text-xs text-emerald-800 font-medium">
-              Accepting Individual Solver & Team Proposals
+            <span className="text-xs font-semibold text-emerald-700">
+              Individual or Team
             </span>
           </div>
         )}
@@ -299,13 +299,33 @@ export const ProblemDetailPage = ({ problemId, navigate }) => {
 
           <div>
             {problem.is_taken ? (
-              <button
-                onClick={() => navigate(`/projects/${problem.project_id}`)}
-                className="px-5 py-2.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-xl shadow-xs transition-colors flex items-center space-x-2"
-              >
-                <span>View Active Project Workspace</span>
-                <ChevronRight className="w-4 h-4" />
-              </button>
+              problem.project_id ? (
+                <button
+                  onClick={() => navigate(`/projects/${problem.project_id}`)}
+                  className="px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-xl shadow-xs transition-colors flex items-center space-x-2"
+                >
+                  <span>View Project Workspace</span>
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              ) : isCreator ? (
+                <button
+                  onClick={() => navigate(`/problems/${problem.id}/applications`)}
+                  className="px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-xl shadow-xs transition-colors flex items-center space-x-2"
+                >
+                  <span>Review Applicants & Compare Candidates</span>
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              ) : existingApp ? (
+                <div className="flex items-center space-x-2 bg-emerald-50 text-emerald-800 border border-emerald-300 px-4 py-2 rounded-xl text-xs font-bold">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                  <span>Proposal Submitted ({existingApp.status.toUpperCase()})</span>
+                </div>
+              ) : (
+                <div className="flex items-center space-x-2 bg-rose-50 text-rose-800 border border-rose-300 px-4 py-2.5 rounded-xl text-xs font-bold">
+                  <span className="w-2 h-2 rounded-full bg-rose-600" />
+                  <span>Not Available (Already Taken)</span>
+                </div>
+              )
             ) : isCreator ? (
               <button
                 onClick={() => navigate(`/problems/${problem.id}/applications`)}
