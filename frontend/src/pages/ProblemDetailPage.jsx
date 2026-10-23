@@ -28,14 +28,36 @@ export const ProblemDetailPage = ({ problemId, navigate }) => {
   
   // Application Modal state
   const [applyModalOpen, setApplyModalOpen] = useState(false);
+  const [solverTab, setSolverTab] = useState('individual'); // 'individual' or 'team'
+  const [teamName, setTeamName] = useState('');
+  const [collegeName, setCollegeName] = useState(user?.college_name || '');
+  const [teamMembers, setTeamMembers] = useState([
+    { name: '', email: '', role: 'Hardware Lead' },
+    { name: '', email: '', role: 'Software Lead' }
+  ]);
   const [proposal, setProposal] = useState('');
   const [approach, setApproach] = useState('');
   const [experience, setExperience] = useState('');
   const [timelineWeeks, setTimelineWeeks] = useState(8);
   const [weeklyHours, setWeeklyHours] = useState(15);
-  const [teamNotes, setTeamNotes] = useState('');
   const [submittingApp, setSubmittingApp] = useState(false);
   const [existingApp, setExistingApp] = useState(null);
+
+  const handleAddMember = () => {
+    setTeamMembers(prev => [...prev, { name: '', email: '', role: 'Member' }]);
+  };
+
+  const handleRemoveMember = (idx) => {
+    setTeamMembers(prev => prev.filter((_, i) => i !== idx));
+  };
+
+  const handleMemberChange = (idx, field, value) => {
+    setTeamMembers(prev => {
+      const next = [...prev];
+      next[idx] = { ...next[idx], [field]: value };
+      return next;
+    });
+  };
 
   useEffect(() => {
     async function loadData() {
@@ -76,20 +98,43 @@ export const ProblemDetailPage = ({ problemId, navigate }) => {
       return;
     }
 
+    if (solverTab === 'team') {
+      if (!teamName.trim() || !collegeName.trim()) {
+        alert('Please enter your Team Name and College Name.');
+        return;
+      }
+      const validMembers = teamMembers.filter(m => m.name.trim() && m.email.trim());
+      if (validMembers.length === 0) {
+        alert('Please enter at least one teammate name and email.');
+        return;
+      }
+    }
+
     setSubmittingApp(true);
     try {
+      const validMembers = solverTab === 'team'
+        ? teamMembers.filter(m => m.name.trim() && m.email.trim())
+        : [];
+
       const res = await apiRequest('/applications', 'POST', {
         problem_id: problemId,
-        solver_type: user.role === 'solver' ? 'individual' : 'individual',
+        solver_type: solverTab,
+        team_name: solverTab === 'team' ? teamName.trim() : null,
+        college_name: solverTab === 'team' ? collegeName.trim() : null,
+        team_members: validMembers,
         proposal,
         approach,
         relevant_experience: experience,
         estimated_timeline_weeks: parseFloat(timelineWeeks),
         weekly_availability_hours: parseFloat(weeklyHours),
-        team_composition_notes: teamNotes
+        team_composition_notes: solverTab === 'team' ? `College Team: ${teamName}` : null
       });
 
-      alert('Proposal submitted successfully! The problem provider has been notified.');
+      if (solverTab === 'team') {
+        alert(`Application submitted! Confirmation emails with project details have been sent to ${validMembers.length} teammates.`);
+      } else {
+        alert('Proposal submitted successfully! The problem provider has been notified.');
+      }
       setApplyModalOpen(false);
       setExistingApp(res);
     } catch (err) {
@@ -178,6 +223,60 @@ export const ProblemDetailPage = ({ problemId, navigate }) => {
           </div>
         </div>
 
+        {/* Project Status & Progress Insight Banner */}
+        {problem.is_taken ? (
+          <div className="p-4 bg-amber-50/90 border border-amber-200 rounded-2xl space-y-2.5">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center space-x-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse" />
+                <span className="font-extrabold text-amber-950 text-xs tracking-wide uppercase">
+                  PROJECT TAKEN • IN PROGRESS
+                </span>
+              </div>
+              <span className="text-xs font-black text-amber-950 bg-amber-100 border border-amber-300 px-2.5 py-0.5 rounded-full">
+                {Math.round(problem.progress_percentage || 0)}% Complete
+              </span>
+            </div>
+
+            {/* Progress Bar */}
+            <div className="w-full bg-amber-200/70 rounded-full h-2 overflow-hidden">
+              <div
+                className="bg-amber-600 h-2 rounded-full transition-all"
+                style={{ width: `${Math.min(100, Math.max(5, problem.progress_percentage || 0))}%` }}
+              />
+            </div>
+
+            <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-amber-900 pt-1">
+              <div>
+                <span>Assigned Solver / Team: </span>
+                <strong className="text-amber-950">{problem.taken_by || 'Assigned Solver'}</strong>
+                {problem.solver_type && <span className="ml-1 text-[10px] text-amber-700 capitalize">({problem.solver_type})</span>}
+              </div>
+              <div>
+                {problem.days_until_inactivity_warning <= 2 ? (
+                  <span className="text-red-700 font-bold bg-red-100 px-2 py-0.5 rounded">
+                    Re-opens in {problem.days_until_inactivity_warning} days if inactive
+                  </span>
+                ) : (
+                  <span>Active {problem.last_activity_days_ago === 0 ? 'today' : `${problem.last_activity_days_ago} days ago`} (7-day activity check)</span>
+                )}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="p-3 bg-emerald-50/80 border border-emerald-200 rounded-2xl flex items-center justify-between text-xs">
+            <div className="flex items-center space-x-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+              <span className="font-bold text-emerald-950 text-xs tracking-wide uppercase">
+                AVAILABLE • OPEN FOR SOLVERS
+              </span>
+            </div>
+            <span className="text-xs text-emerald-800 font-medium">
+              Accepting Individual Solver & College Team Proposals
+            </span>
+          </div>
+        )}
+
         {/* Actions Bar */}
         <div className="flex flex-wrap items-center justify-between gap-4 pt-2 border-t border-slate-100">
           <div className="flex items-center space-x-2">
@@ -201,7 +300,15 @@ export const ProblemDetailPage = ({ problemId, navigate }) => {
           </div>
 
           <div>
-            {isCreator ? (
+            {problem.is_taken ? (
+              <button
+                onClick={() => navigate(`/projects/${problem.project_id}`)}
+                className="px-5 py-2.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-xl shadow-xs transition-colors flex items-center space-x-2"
+              >
+                <span>View Active Project Workspace</span>
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            ) : isCreator ? (
               <button
                 onClick={() => navigate(`/problems/${problem.id}/applications`)}
                 className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-xs transition-colors flex items-center space-x-2"
@@ -467,14 +574,14 @@ export const ProblemDetailPage = ({ problemId, navigate }) => {
         </div>
       )}
 
-      {/* Application Modal */}
+      {/* Application Modal with Individual & College Team Tabs */}
       {applyModalOpen && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 space-y-6 shadow-2xl my-8">
+          <div className="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 space-y-5 shadow-2xl my-8 max-h-[92vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <div>
-                <h3 className="text-lg font-bold text-slate-900">Submit Application & Proposal</h3>
-                <p className="text-xs text-slate-500 mt-0.5">Challenge: {problem.title}</p>
+                <h3 className="text-lg font-bold text-slate-900">Apply as Solver</h3>
+                <p className="text-xs text-slate-500 mt-0.5 truncate max-w-md">{problem.title}</p>
               </div>
               <button
                 onClick={() => setApplyModalOpen(false)}
@@ -484,33 +591,144 @@ export const ProblemDetailPage = ({ problemId, navigate }) => {
               </button>
             </div>
 
+            {/* Solver Type Selection Tabs */}
+            <div className="grid grid-cols-2 gap-2 p-1 bg-slate-100 rounded-xl text-xs font-bold text-center">
+              <button
+                type="button"
+                onClick={() => setSolverTab('individual')}
+                className={`py-2 rounded-lg transition-colors ${solverTab === 'individual' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500'}`}
+              >
+                Individual Solver
+              </button>
+              <button
+                type="button"
+                onClick={() => setSolverTab('team')}
+                className={`py-2 rounded-lg transition-colors ${solverTab === 'team' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500'}`}
+              >
+                College Team
+              </button>
+            </div>
+
             <form onSubmit={handleApply} className="space-y-4 text-xs">
               
+              {/* College Team Section */}
+              {solverTab === 'team' && (
+                <div className="p-4 bg-blue-50/70 border border-blue-200 rounded-2xl space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-bold text-blue-950 text-xs">College Team Information</h4>
+                    <span className="text-[10px] text-blue-700 bg-blue-100 px-2 py-0.5 rounded-full font-semibold">
+                      Email Dispatch Active
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block font-bold text-blue-900 mb-1">Team Name *</label>
+                      <input
+                        type="text"
+                        required={solverTab === 'team'}
+                        value={teamName}
+                        onChange={(e) => setTeamName(e.target.value)}
+                        placeholder="e.g. COEP Solar Innovators"
+                        className="w-full p-2 bg-white border border-blue-200 rounded-xl focus:outline-none focus:border-blue-500 text-xs"
+                      />
+                    </div>
+                    <div>
+                      <label className="block font-bold text-blue-900 mb-1">College / Institution *</label>
+                      <input
+                        type="text"
+                        required={solverTab === 'team'}
+                        value={collegeName}
+                        onChange={(e) => setCollegeName(e.target.value)}
+                        placeholder="e.g. COEP Technological University"
+                        className="w-full p-2 bg-white border border-blue-200 rounded-xl focus:outline-none focus:border-blue-500 text-xs"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Dynamic Teammates Roster */}
+                  <div className="space-y-2 pt-2">
+                    <div className="flex items-center justify-between">
+                      <label className="block font-bold text-blue-950 text-[11px]">
+                        Teammates (Name & Email ID)
+                      </label>
+                      <button
+                        type="button"
+                        onClick={handleAddMember}
+                        className="text-[11px] font-bold text-blue-700 hover:text-blue-900 flex items-center space-x-1"
+                      >
+                        <span>+ Add Teammate</span>
+                      </button>
+                    </div>
+
+                    {teamMembers.map((member, idx) => (
+                      <div key={idx} className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          value={member.name}
+                          onChange={(e) => handleMemberChange(idx, 'name', e.target.value)}
+                          placeholder={`Member ${idx + 1} Name`}
+                          className="w-1/3 p-2 bg-white border border-blue-200 rounded-lg text-xs"
+                        />
+                        <input
+                          type="email"
+                          value={member.email}
+                          onChange={(e) => handleMemberChange(idx, 'email', e.target.value)}
+                          placeholder="member@college.edu"
+                          className="flex-1 p-2 bg-white border border-blue-200 rounded-lg text-xs"
+                        />
+                        <input
+                          type="text"
+                          value={member.role}
+                          onChange={(e) => handleMemberChange(idx, 'role', e.target.value)}
+                          placeholder="Role / Focus"
+                          className="w-1/4 p-2 bg-white border border-blue-200 rounded-lg text-xs hidden sm:block"
+                        />
+                        {teamMembers.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveMember(idx)}
+                            className="p-1.5 text-red-500 hover:text-red-700 text-xs font-bold"
+                            title="Remove member"
+                          >
+                            ✕
+                          </button>
+                        )}
+                      </div>
+                    ))}
+
+                    <p className="text-[10px] text-blue-800 italic pt-1">
+                      Teammates will receive project confirmation and details via Email upon submission.
+                    </p>
+                  </div>
+                </div>
+              )}
+
               <div>
                 <label className="block font-bold text-slate-800 mb-1">
-                  Technical Proposal & Vision *
+                  Technical Proposal & Solution Architecture *
                 </label>
                 <textarea
                   required
                   rows={3}
                   value={proposal}
                   onChange={(e) => setProposal(e.target.value)}
-                  placeholder="Outline your proposed solution architecture, hardware/software stack, and how it addresses the village root causes..."
-                  className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-500 focus:bg-white text-xs"
+                  placeholder="Outline your solution architecture, hardware/software stack, and how it addresses root causes..."
+                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-500 focus:bg-white text-xs"
                 />
               </div>
 
               <div>
                 <label className="block font-bold text-slate-800 mb-1">
-                  Implementation Approach & Methodology *
+                  Implementation Approach & Testing *
                 </label>
                 <textarea
                   required
                   rows={3}
                   value={approach}
                   onChange={(e) => setApproach(e.target.value)}
-                  placeholder="Detail step-by-step development, bench testing, calibration, and on-ground village deployment plan..."
-                  className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-500 focus:bg-white text-xs"
+                  placeholder="Step-by-step development, bench testing, calibration, and on-ground deployment plan..."
+                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-500 focus:bg-white text-xs"
                 />
               </div>
 
@@ -522,8 +740,8 @@ export const ProblemDetailPage = ({ problemId, navigate }) => {
                   rows={2}
                   value={experience}
                   onChange={(e) => setExperience(e.target.value)}
-                  placeholder="Highlight past coursework, hackathon prototypes, lab projects, or field survey experience..."
-                  className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-500 focus:bg-white text-xs"
+                  placeholder="Coursework, hackathons, lab prototypes, or field experience..."
+                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-500 focus:bg-white text-xs"
                 />
               </div>
 
@@ -538,7 +756,7 @@ export const ProblemDetailPage = ({ problemId, navigate }) => {
                     max="24"
                     value={timelineWeeks}
                     onChange={(e) => setTimelineWeeks(e.target.value)}
-                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-500"
+                    className="w-full p-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-500 text-xs"
                   />
                 </div>
 
@@ -549,32 +767,15 @@ export const ProblemDetailPage = ({ problemId, navigate }) => {
                   <input
                     type="number"
                     min="5"
-                    max="40"
+                    max="60"
                     value={weeklyHours}
                     onChange={(e) => setWeeklyHours(e.target.value)}
-                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-500"
+                    className="w-full p-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-500 text-xs"
                   />
                 </div>
               </div>
 
-              <div>
-                <label className="block font-bold text-slate-800 mb-1">
-                  Team Composition Notes (Optional)
-                </label>
-                <input
-                  type="text"
-                  value={teamNotes}
-                  onChange={(e) => setTeamNotes(e.target.value)}
-                  placeholder="e.g. 2-person COEP team: 1 hardware lead, 1 mobile app lead"
-                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-500"
-                />
-              </div>
-
-              <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200 text-[11px] text-emerald-800">
-                🔒 A tamper-proof match score snapshot will be computed upon submission based on your profile skills and stored with your application.
-              </div>
-
-              <div className="flex items-center justify-end space-x-2 pt-2">
+              <div className="flex items-center justify-end space-x-2 pt-2 border-t border-slate-100">
                 <button
                   type="button"
                   onClick={() => setApplyModalOpen(false)}
@@ -588,7 +789,7 @@ export const ProblemDetailPage = ({ problemId, navigate }) => {
                   className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-xs transition-colors flex items-center space-x-1.5"
                 >
                   <Send className="w-3.5 h-3.5" />
-                  <span>{submittingApp ? 'Submitting...' : 'Confirm Application'}</span>
+                  <span>{submittingApp ? 'Submitting...' : solverTab === 'team' ? 'Submit Team Application' : 'Submit Application'}</span>
                 </button>
               </div>
 
