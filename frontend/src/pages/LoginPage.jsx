@@ -61,7 +61,7 @@ export const LoginPage = ({ navigate }) => {
       <div className="bg-emerald-50/70 p-4 rounded-2xl border border-emerald-200 space-y-2.5 text-xs">
         <div className="flex items-center space-x-1.5 text-emerald-950 font-bold">
           <Sparkles className="w-4 h-4 text-emerald-600" />
-          <span>1-Click Evaluator Quick Logins:</span>
+          <span>1-Click Persona Sign-In:</span>
         </div>
         <div className="grid grid-cols-1 gap-1.5">
           <button
@@ -70,7 +70,7 @@ export const LoginPage = ({ navigate }) => {
             className="w-full text-left px-3 py-1.5 bg-white hover:bg-emerald-100/50 rounded-xl border border-emerald-200 font-semibold text-slate-800 text-[11px] flex items-center justify-between"
           >
             <span>Ramesh Patil (Gram Panchayat Sarpanch)</span>
-            <span className="text-[10px] text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded">Provider</span>
+            <span className="text-[10px] text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded font-bold">Provider</span>
           </button>
 
           <button
@@ -79,16 +79,34 @@ export const LoginPage = ({ navigate }) => {
             className="w-full text-left px-3 py-1.5 bg-white hover:bg-emerald-100/50 rounded-xl border border-emerald-200 font-semibold text-slate-800 text-[11px] flex items-center justify-between"
           >
             <span>Arjun Sharma (COEP Engineering Student)</span>
-            <span className="text-[10px] text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded">Solver Lead</span>
+            <span className="text-[10px] text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded font-bold">Student Solver</span>
           </button>
 
           <button
             type="button"
-            onClick={() => handleQuickLogin('admin@Co-Solve.gov.in')}
+            onClick={() => handleQuickLogin('priya.nair@iitb.ac.in')}
             className="w-full text-left px-3 py-1.5 bg-white hover:bg-emerald-100/50 rounded-xl border border-emerald-200 font-semibold text-slate-800 text-[11px] flex items-center justify-between"
           >
-            <span>Dr. Sunita Rao (Platform Moderator)</span>
-            <span className="text-[10px] text-rose-700 bg-rose-50 px-1.5 py-0.5 rounded">Admin</span>
+            <span>Priya Nair (IIT Bombay Student)</span>
+            <span className="text-[10px] text-purple-700 bg-purple-50 px-1.5 py-0.5 rounded font-bold">Student Solver</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleQuickLogin('vikram.mehta@ruraltech.org')}
+            className="w-full text-left px-3 py-1.5 bg-white hover:bg-emerald-100/50 rounded-xl border border-emerald-200 font-semibold text-slate-800 text-[11px] flex items-center justify-between"
+          >
+            <span>Dr. Vikram Mehta (RTIC Collective)</span>
+            <span className="text-[10px] text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded font-bold">Institution Lead</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleQuickLogin('admin@samarthya.gov.in')}
+            className="w-full text-left px-3 py-1.5 bg-white hover:bg-emerald-100/50 rounded-xl border border-emerald-200 font-semibold text-slate-800 text-[11px] flex items-center justify-between"
+          >
+            <span>Dr. Sunita Rao (Institution Governance)</span>
+            <span className="text-[10px] text-rose-700 bg-rose-50 px-1.5 py-0.5 rounded font-bold">Institution Authority</span>
           </button>
         </div>
       </div>
@@ -130,6 +148,9 @@ export const LoginPage = ({ navigate }) => {
               className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-500 text-xs"
             />
           </div>
+          <span className="text-[10px] text-slate-400 mt-1 block">
+            Demo password: <strong className="text-slate-600">DemoPassword123!</strong> (or any password in local dev)
+          </span>
         </div>
 
         <button

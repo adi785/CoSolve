@@ -57,7 +57,7 @@ export const Navbar = ({ currentRoute, navigate }) => {
               className={`px-3 py-1.5 rounded-lg transition-colors ${currentRoute === '/how-it-works' ? 'text-emerald-700 bg-emerald-50 font-semibold' : 'hover:text-slate-900 hover:bg-slate-100'
                 }`}
             >
-              <span>How It Works</span>
+              <span>How we Work</span>
             </button>
 
             {/* Role-Specific Shortcuts */}
@@ -236,7 +236,7 @@ export const Navbar = ({ currentRoute, navigate }) => {
             onClick={() => { navigate('/how-it-works'); setMobileMenuOpen(false); }}
             className="w-full text-left px-3 py-2 text-sm font-medium text-slate-800 rounded-lg hover:bg-slate-100"
           >
-            How It Works
+            How we Work
           </button>
           {user && (
             <>
