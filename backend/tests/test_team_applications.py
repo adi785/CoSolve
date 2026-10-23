@@ -18,6 +18,7 @@ def test_team_application_and_email_dispatch():
     })
     assert login_res.status_code == 200
     token = login_res.json()["access_token"]
+    user_id = login_res.json()["user"]["id"]
     headers = {"Authorization": f"Bearer {token}"}
 
     # 2. Get published problems
@@ -26,6 +27,17 @@ def test_team_application_and_email_dispatch():
     problems = prob_res.json()
     assert len(problems) > 0
     problem_id = problems[0]["id"]
+
+    # Clean up any existing application by Arjun for this problem for repeatable tests
+    db = SessionLocal()
+    try:
+        db.query(Application).filter(
+            Application.problem_id == problem_id,
+            Application.applicant_id == user_id
+        ).delete()
+        db.commit()
+    finally:
+        db.close()
 
     # 3. Apply as a College Team
     app_payload = {
@@ -54,46 +66,14 @@ def test_inactivity_revocation_and_cadence():
     # Verify the 7-day inactivity rule and 2-day cadence
     db = SessionLocal()
     try:
-        # Find or set an active project in progress
-        project = db.query(Project).filter(Project.status.in_(["in_progress", "chartered"])).first()
-        if not project:
-            # Create a test active project
-            p = db.query(Problem).first()
-            u = db.query(Profile).filter(Profile.role == "solver").first()
-            a = db.query(Application).filter(Application.problem_id == p.id).first()
-            if not a:
-                a = Application(
-                    problem_id=p.id,
-                    applicant_id=u.id,
-                    solver_type="individual",
-                    proposal="Test Proposal text for project creation",
-                    approach="Test Approach text for project creation",
-                    match_score_at_application=88.0,
-                    status="accepted"
-                )
-                db.add(a)
-                db.commit()
-                db.refresh(a)
-
-            project = Project(
-                problem_id=p.id,
-                application_id=a.id,
-                solver_type="individual",
-                lead_solver_id=u.id,
-                status="in_progress",
-                progress_percentage=20.0,
-                last_activity_at=datetime.utcnow() - timedelta(days=8),
-                charter_scope="Test Scope",
-                charter_deliverables="Test Deliverables",
-                charter_acceptance_criteria="Test Acceptance Criteria"
-            )
-            db.add(project)
-            db.commit()
-            db.refresh(project)
-        else:
-            project.last_activity_at = datetime.utcnow() - timedelta(days=8)
-            project.status = "in_progress"
-            db.commit()
+        # Get any existing project
+        project = db.query(Project).first()
+        assert project is not None
+        
+        # Set project to active in_progress and inactive for 8 days
+        project.status = "in_progress"
+        project.last_activity_at = datetime.utcnow() - timedelta(days=8)
+        db.commit()
 
         # When listing problems, enrich_problem_with_project_insights detects inactivity >= 7 days
         prob_res = client.get("/api/problems")
