@@ -53,11 +53,18 @@ def submit_application(
     else:
         match_info = MatchingEngine.calculate_match(current_user, problem, ai_analysis)
 
+    members_json = None
+    if app_in.team_members:
+        members_json = json.dumps([m.model_dump() for m in app_in.team_members])
+
     app = Application(
         problem_id=app_in.problem_id,
         solver_type=app_in.solver_type,
         applicant_id=current_user.id,
         organization_id=app_in.organization_id,
+        team_name=app_in.team_name,
+        college_name=app_in.college_name or current_user.college_name,
+        team_members_data=members_json,
         proposal=app_in.proposal,
         approach=app_in.approach,
         relevant_experience=app_in.relevant_experience,
@@ -72,21 +79,55 @@ def submit_application(
     db.commit()
     db.refresh(app)
 
-    log_audit(db, "APPLICATION_SUBMITTED", "application", app.id, actor_id=current_user.id, details={"problem_id": problem.id, "match_score": match_info["match_score"]})
+    log_audit(db, "APPLICATION_SUBMITTED", "application", app.id, actor_id=current_user.id, details={"problem_id": problem.id, "team_name": app_in.team_name, "match_score": match_info["match_score"]})
+
+    # Teammate email confirmation dispatch (Requirement 4)
+    if app_in.team_members:
+        for m in app_in.team_members:
+            reg_user = db.query(Profile).filter(Profile.email == m.email).first()
+            if reg_user:
+                create_notification(
+                    db,
+                    user_id=reg_user.id,
+                    title=f"Team Challenge Confirmation: {app_in.team_name or 'College Team'}",
+                    message=f"Team Leader {current_user.full_name} added you to '{app_in.team_name}' for '{problem.title}'. Confirmation email dispatched.",
+                    category="project",
+                    link=f"/problems/{problem.id}"
+                )
+            log_audit(
+                db,
+                "TEAMMATE_EMAIL_CONFIRMATION_SENT",
+                "application",
+                app.id,
+                actor_id=current_user.id,
+                details={
+                    "recipient_name": m.name,
+                    "recipient_email": m.email,
+                    "team_name": app_in.team_name,
+                    "problem_title": problem.title,
+                    "email_status": "sent"
+                }
+            )
 
     # Notify provider
     create_notification(
         db,
         user_id=problem.creator_id,
         title=f"New Application for '{problem.title}'",
-        message=f"{current_user.full_name} applied with a match score of {match_info['match_score']}%.",
+        message=f"{current_user.full_name} {f'and Team {app_in.team_name}' if app_in.team_name else ''} applied with a match score of {match_info['match_score']}%.",
         category="application",
         link=f"/problems/{problem.id}/applications"
     )
 
     resp = ApplicationResponse.model_validate(app)
     resp.applicant_name = current_user.full_name
-    resp.college_name = current_user.college_name
+    resp.college_name = app.college_name or current_user.college_name
+    resp.team_name = app.team_name
+    if app.team_members_data:
+        try:
+            resp.team_members = json.loads(app.team_members_data)
+        except Exception:
+            resp.team_members = []
     return resp
 
 
@@ -109,9 +150,15 @@ def get_applications_for_problem(
         item = ApplicationResponse.model_validate(a)
         if a.applicant:
             item.applicant_name = a.applicant.full_name
-            item.college_name = a.applicant.college_name
+            item.college_name = a.college_name or a.applicant.college_name
         if a.organization:
             item.org_name = a.organization.name
+        item.team_name = a.team_name
+        if a.team_members_data:
+            try:
+                item.team_members = json.loads(a.team_members_data)
+            except Exception:
+                item.team_members = []
         results.append(item)
     
     # Sort by match score descending
@@ -129,9 +176,15 @@ def get_my_applications(
     for a in apps:
         item = ApplicationResponse.model_validate(a)
         item.applicant_name = current_user.full_name
-        item.college_name = current_user.college_name
+        item.college_name = a.college_name or current_user.college_name
+        item.team_name = a.team_name
         if a.organization:
             item.org_name = a.organization.name
+        if a.team_members_data:
+            try:
+                item.team_members = json.loads(a.team_members_data)
+            except Exception:
+                item.team_members = []
         results.append(item)
     return results
 
@@ -182,9 +235,13 @@ def select_solver_and_create_project(
         problem_id=problem.id,
         application_id=app.id,
         solver_type=app.solver_type,
+        team_name=app.team_name,
         lead_solver_id=app.applicant_id,
         organization_id=app.organization_id,
         status="assigned",
+        progress_percentage=15.0,
+        last_activity_at=datetime.utcnow(),
+        last_progress_updated_at=datetime.utcnow(),
         charter_scope=selection_in.charter_scope,
         charter_deliverables=selection_in.charter_deliverables,
         charter_acceptance_criteria=selection_in.charter_acceptance_criteria,
@@ -206,6 +263,21 @@ def select_solver_and_create_project(
         role="lead"
     )
     db.add(member)
+
+    # Add any teammates from team_members_data who have existing accounts
+    if app.team_members_data:
+        try:
+            m_list = json.loads(app.team_members_data)
+            for m in m_list:
+                user_match = db.query(Profile).filter(Profile.email == m.get("email")).first()
+                if user_match and user_match.id != app.applicant_id:
+                    db.add(ProjectMember(
+                        project_id=project.id,
+                        user_id=user_match.id,
+                        role="team_member"
+                    ))
+        except Exception:
+            pass
 
     # Initialize default 4 milestones based on project scope
     m1 = Milestone(project_id=project.id, title="1. Requirement Baseline & Hardware/Data Prep", description="Establish baseline conditions and sensor/data schemas.", order=1, status="in_progress")

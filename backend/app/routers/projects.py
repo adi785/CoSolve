@@ -268,6 +268,8 @@ def submit_prototype(
     project.prototype_known_limitations = proto_in.prototype_known_limitations
     project.prototype_submitted_at = datetime.utcnow()
     project.status = "prototype_submitted"
+    project.last_activity_at = datetime.utcnow()
+    project.progress_percentage = max(project.progress_percentage, 55.0)
 
     db.commit()
 
@@ -522,6 +524,9 @@ def update_milestone_status(
         raise HTTPException(status_code=404, detail="Milestone not found")
 
     m.status = m_in.status
+    project = db.query(Project).filter(Project.id == project_id).first()
+    if project:
+        project.last_activity_at = datetime.utcnow()
     db.commit()
     return m
 
