@@ -205,12 +205,48 @@ def enrich_problem_with_project_insights(p: Problem, db: Session) -> ProblemResp
         res.inactivity_status = "warning" if days_inactive >= 5 else "active"
         res.project_status = active_project.status
         res.next_progress_check_days = max(1, 2 - (days_since_progress_sync % 2))
-    else:
-        res.is_taken = False
-        res.inactivity_status = "open"
-        res.progress_percentage = 0.0
-        res.taken_by = None
-        res.days_until_inactivity_warning = 7
+        return res
+
+    # Check if a solver or team has registered/applied for this challenge
+    registered_app = db.query(Application).filter(
+        Application.problem_id == p.id,
+        Application.status != "rejected"
+    ).order_by(Application.submitted_at.desc()).first()
+
+    if registered_app:
+        app_submitted = registered_app.submitted_at or now
+        days_inactive = (now - app_submitted).days
+
+        # 7-day inactivity rule: if registered for 7 days without work, reopens challenge
+        if days_inactive >= 7:
+            registered_app.status = "rejected"
+            p.moderation_status = "published"
+            db.commit()
+            res.is_taken = False
+            res.inactivity_status = "reopened_after_inactivity"
+            res.progress_percentage = 0.0
+            res.taken_by = None
+            res.days_until_inactivity_warning = 7
+            return res
+
+        res.is_taken = True
+        res.project_id = None
+        res.taken_by = registered_app.team_name or (registered_app.applicant.full_name if registered_app.applicant else "Registered Solver")
+        res.solver_type = registered_app.solver_type
+        res.progress_percentage = 15.0  # Initial registered proposal stage
+        res.last_activity_days_ago = days_inactive
+        res.days_until_inactivity_warning = max(0, 7 - days_inactive)
+        res.inactivity_status = "registered"
+        res.project_status = "application_registered"
+        res.next_progress_check_days = 2
+        return res
+
+    # Challenge is open and available
+    res.is_taken = False
+    res.inactivity_status = "open"
+    res.progress_percentage = 0.0
+    res.taken_by = None
+    res.days_until_inactivity_warning = 7
 
     return res
 
