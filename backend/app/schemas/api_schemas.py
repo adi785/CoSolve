@@ -189,6 +189,18 @@ class ProblemResponse(BaseModel):
     creator_name: Optional[str] = None
     creator_type: Optional[str] = None
     panchayat_name: Optional[str] = None
+    
+    # Project Taken & Progress Insights
+    is_taken: bool = False
+    project_id: Optional[str] = None
+    taken_by: Optional[str] = None
+    solver_type: Optional[str] = None
+    progress_percentage: float = 0.0
+    last_activity_days_ago: int = 0
+    days_until_inactivity_warning: int = 7
+    inactivity_status: str = "open"  # "open", "active", "warning", "revoked"
+    project_status: Optional[str] = None
+    next_progress_check_days: int = 2
 
     class Config:
         from_attributes = True
@@ -199,10 +211,17 @@ class AIAnalysisUpdate(BaseModel):
     provider_edits: Optional[Dict[str, Any]] = None
 
 # ----------------- APPLICATION SCHEMAS -----------------
+class TeamMemberInput(BaseModel):
+    name: str
+    email: EmailStr
+
 class ApplicationCreate(BaseModel):
     problem_id: str
-    solver_type: str = "individual"  # "individual", "organization"
+    solver_type: str = "individual"  # "individual", "organization", "team"
     organization_id: Optional[str] = None
+    team_name: Optional[str] = None
+    college_name: Optional[str] = None
+    team_members: Optional[List[TeamMemberInput]] = None
     proposal: str = Field(..., min_length=20)
     approach: str = Field(..., min_length=20)
     relevant_experience: Optional[str] = None
@@ -241,6 +260,8 @@ class ApplicationResponse(BaseModel):
     applicant_name: Optional[str] = None
     college_name: Optional[str] = None
     org_name: Optional[str] = None
+    team_name: Optional[str] = None
+    team_members: Optional[List[Dict[str, Any]]] = None
 
     class Config:
         from_attributes = True

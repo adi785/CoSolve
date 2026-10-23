@@ -7,6 +7,7 @@ from sqlalchemy import or_
 
 from backend.app.database import get_db
 from backend.app.models.problem import Problem, AIProblemAnalysis
+from backend.app.models.project import Project
 from backend.app.models.user import Profile
 from backend.app.schemas.api_schemas import (
     ProblemCreate,
@@ -128,6 +129,92 @@ def create_problem(
     return resp
 
 
+def enrich_problem_with_project_insights(p: Problem, db: Session) -> ProblemResponse:
+    res = ProblemResponse.model_validate(p)
+    if p.creator:
+        res.creator_name = p.creator.full_name
+        res.creator_type = p.creator.provider_type
+        res.panchayat_name = p.creator.panchayat_name
+
+    active_project = db.query(Project).filter(
+        Project.problem_id == p.id,
+        Project.status != "revoked"
+    ).order_by(Project.assigned_at.desc()).first()
+
+    now = datetime.utcnow()
+
+    if active_project:
+        last_act = active_project.last_activity_at or active_project.assigned_at or now
+        days_inactive = (now - last_act).days
+        
+        # Inactivity revocation rule: 7 days without work reopens the challenge
+        if days_inactive >= 7 and active_project.status not in ["completed", "revoked"]:
+            active_project.status = "revoked"
+            p.moderation_status = "published"
+            db.commit()
+            log_audit(
+                db, 
+                "PROJECT_REVOKED_INACTIVITY", 
+                "project", 
+                active_project.id, 
+                details=f"Project revoked after {days_inactive} days without work. Reopened on challenges board."
+            )
+            res.is_taken = False
+            res.inactivity_status = "revoked"
+            res.progress_percentage = 0.0
+            res.taken_by = None
+            res.project_status = "reopened_after_inactivity"
+            res.days_until_inactivity_warning = 7
+            return res
+
+        # Calculate progress percentage (updated on 2-day cadence)
+        total_milestones = len(active_project.milestones)
+        approved_milestones = sum(1 for m in active_project.milestones if m.status == "approved")
+        
+        stage_base_progress = {
+            "assigned": 15.0,
+            "in_progress": 35.0,
+            "prototype_submitted": 60.0,
+            "prototype_review": 65.0,
+            "testing": 80.0,
+            "adoption_review": 90.0,
+            "completed": 100.0
+        }.get(active_project.status, 20.0)
+
+        if total_milestones > 0:
+            milestone_ratio = (approved_milestones / total_milestones) * 100.0
+            calc_progress = round((stage_base_progress * 0.5) + (milestone_ratio * 0.5), 1)
+        else:
+            calc_progress = stage_base_progress
+
+        calc_progress = max(10.0, min(100.0, calc_progress))
+        active_project.progress_percentage = calc_progress
+
+        days_since_progress_sync = (now - (active_project.last_progress_updated_at or now)).days
+        if days_since_progress_sync >= 2:
+            active_project.last_progress_updated_at = now
+            db.commit()
+
+        res.is_taken = True
+        res.project_id = active_project.id
+        res.taken_by = active_project.team_name or (active_project.lead_solver.full_name if active_project.lead_solver else "Student Solver")
+        res.solver_type = active_project.solver_type
+        res.progress_percentage = calc_progress
+        res.last_activity_days_ago = days_inactive
+        res.days_until_inactivity_warning = max(0, 7 - days_inactive)
+        res.inactivity_status = "warning" if days_inactive >= 5 else "active"
+        res.project_status = active_project.status
+        res.next_progress_check_days = max(1, 2 - (days_since_progress_sync % 2))
+    else:
+        res.is_taken = False
+        res.inactivity_status = "open"
+        res.progress_percentage = 0.0
+        res.taken_by = None
+        res.days_until_inactivity_warning = 7
+
+    return res
+
+
 @router.get("", response_model=List[ProblemResponse])
 def list_published_problems(
     domain: Optional[str] = None,
@@ -153,14 +240,7 @@ def list_published_problems(
         ))
 
     problems = query.order_by(Problem.created_at.desc()).all()
-    results = []
-    for p in problems:
-        res = ProblemResponse.model_validate(p)
-        if p.creator:
-            res.creator_name = p.creator.full_name
-            res.creator_type = p.creator.provider_type
-            res.panchayat_name = p.creator.panchayat_name
-        results.append(res)
+    results = [enrich_problem_with_project_insights(p, db) for p in problems]
     return results
 
 
@@ -170,13 +250,7 @@ def get_my_problems(
     db: Session = Depends(get_db)
 ):
     problems = db.query(Problem).filter(Problem.creator_id == current_user.id).order_by(Problem.created_at.desc()).all()
-    results = []
-    for p in problems:
-        res = ProblemResponse.model_validate(p)
-        res.creator_name = current_user.full_name
-        res.creator_type = current_user.provider_type
-        res.panchayat_name = current_user.panchayat_name
-        results.append(res)
+    results = [enrich_problem_with_project_insights(p, db) for p in problems]
     return results
 
 
@@ -198,12 +272,7 @@ def get_problem(
     problem.view_count = (problem.view_count or 0) + 1
     db.commit()
 
-    res = ProblemResponse.model_validate(problem)
-    if problem.creator:
-        res.creator_name = problem.creator.full_name
-        res.creator_type = problem.creator.provider_type
-        res.panchayat_name = problem.creator.panchayat_name
-    return res
+    return enrich_problem_with_project_insights(problem, db)
 
 
 @router.put("/{problem_id}", response_model=ProblemResponse)

@@ -14,13 +14,19 @@ class Project(Base):
     problem_id = Column(String(36), ForeignKey("problems.id"), nullable=False)
     application_id = Column(String(36), ForeignKey("applications.id"), nullable=False, unique=True)
     
-    solver_type = Column(String(50), default="individual")  # "individual", "organization"
+    solver_type = Column(String(50), default="individual")  # "individual", "organization", "team"
+    team_name = Column(String(255), nullable=True)
     lead_solver_id = Column(String(36), ForeignKey("profiles.id"), nullable=False)
     organization_id = Column(String(36), ForeignKey("organizations.id"), nullable=True)
     
     # Status
-    # assigned -> in_progress -> prototype_submitted -> prototype_review -> testing -> adoption_review -> completed
+    # assigned -> in_progress -> prototype_submitted -> prototype_review -> testing -> adoption_review -> completed -> revoked
     status = Column(String(50), default="assigned")
+    
+    # Progress & 2-day update cadence / 7-day inactivity rule
+    progress_percentage = Column(Float, default=10.0)
+    last_activity_at = Column(DateTime, default=datetime.utcnow)
+    last_progress_updated_at = Column(DateTime, default=datetime.utcnow)
     
     # Project Charter & Agreements (Section 9/10)
     charter_scope = Column(Text, nullable=False)
