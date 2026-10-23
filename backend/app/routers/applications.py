@@ -90,7 +90,7 @@ def submit_application(
                 create_notification(
                     db,
                     user_id=reg_user.id,
-                    title=f"Team Challenge Confirmation: {app_in.team_name or 'College Team'}",
+                    title=f"Team Challenge Confirmation: {app_in.team_name or 'Team'}",
                     message=f"Team Leader {current_user.full_name} added you to '{app_in.team_name}' for '{problem.title}'. Confirmation email dispatched.",
                     category="project",
                     link=f"/problems/{problem.id}"

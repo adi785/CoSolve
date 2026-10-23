@@ -16,7 +16,7 @@ class Application(Base):
     applicant_id = Column(String(36), ForeignKey("profiles.id"), nullable=False)
     organization_id = Column(String(36), ForeignKey("organizations.id"), nullable=True)
     
-    # Team specifics (College teams)
+    # Team specifics (Teams)
     team_name = Column(String(255), nullable=True)
     college_name = Column(String(255), nullable=True)
     team_members_data = Column(Text, nullable=True)  # JSON list: [{"name": str, "email": str, "notified": bool}]

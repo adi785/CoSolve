@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { apiRequest } from '../api/client';
 import { Badge } from '../components/Badge';
-import { 
-  Users, 
-  Sparkles, 
-  Check, 
-  ArrowLeft, 
-  FileCheck2, 
-  Calendar, 
-  Clock, 
-  CheckCircle2, 
+import {
+  Users,
+  Sparkles,
+  Check,
+  ArrowLeft,
+  FileCheck2,
+  Calendar,
+  Clock,
+  CheckCircle2,
   Award,
   ChevronRight,
   ShieldCheck
@@ -19,7 +19,7 @@ export const CandidateComparisonPage = ({ problemId, navigate }) => {
   const [problem, setProblem] = useState(null);
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
-  
+
   // Selection Charter modal
   const [selectedApp, setSelectedApp] = useState(null);
   const [charterScope, setCharterScope] = useState('');
@@ -83,7 +83,7 @@ export const CandidateComparisonPage = ({ problemId, navigate }) => {
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
-      
+
       {/* Back button */}
       <button
         onClick={() => navigate(`/problems/${problemId}`)}
@@ -133,18 +133,17 @@ export const CandidateComparisonPage = ({ problemId, navigate }) => {
             return (
               <div
                 key={app.id}
-                className={`bg-white rounded-3xl border p-6 sm:p-8 shadow-xs space-y-6 transition-all ${
-                  isAccepted ? 'border-emerald-500 ring-2 ring-emerald-100' : 'border-slate-200 hover:border-slate-300'
-                }`}
+                className={`bg-white rounded-3xl border p-6 sm:p-8 shadow-xs space-y-6 transition-all ${isAccepted ? 'border-emerald-500 ring-2 ring-emerald-100' : 'border-slate-200 hover:border-slate-300'
+                  }`}
               >
-                
+
                 {/* Candidate Header */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
                   <div className="space-y-1">
                     <div className="flex items-center space-x-2">
                       <h3 className="text-base font-bold text-slate-900">{app.applicant_name}</h3>
                       <span className="text-[11px] font-semibold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200">
-                        {app.solver_type === 'team' ? 'College Team' : app.solver_type === 'organization' ? 'Institution' : 'Individual Solver'}
+                        {app.solver_type === 'team' ? 'Team' : app.solver_type === 'organization' ? 'Institution' : 'Individual Solver'}
                       </span>
                       {isAccepted && (
                         <Badge variant="published" size="xs">OFFICIALLY SELECTED</Badge>
@@ -269,7 +268,7 @@ export const CandidateComparisonPage = ({ problemId, navigate }) => {
             </div>
 
             <form onSubmit={handleConfirmSelection} className="space-y-4 text-xs">
-              
+
               <div>
                 <label className="block font-bold text-slate-800 mb-1">
                   Agreed Project Scope & Boundaries *

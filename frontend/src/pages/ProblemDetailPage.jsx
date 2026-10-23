@@ -2,16 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { apiRequest } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import { Badge } from '../components/Badge';
-import { 
-  MapPin, 
-  IndianRupee, 
-  Sparkles, 
-  Calendar, 
-  Users, 
-  CheckCircle2, 
-  AlertCircle, 
-  Send, 
-  FileText, 
+import {
+  MapPin,
+  IndianRupee,
+  Sparkles,
+  Calendar,
+  Users,
+  CheckCircle2,
+  AlertCircle,
+  Send,
+  FileText,
   ArrowLeft,
   ShieldCheck,
   Check,
@@ -25,7 +25,7 @@ export const ProblemDetailPage = ({ problemId, navigate }) => {
   const [aiAnalysis, setAiAnalysis] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview'); // 'overview', 'ai_analysis'
-  
+
   // Application Modal state
   const [applyModalOpen, setApplyModalOpen] = useState(false);
   const [solverTab, setSolverTab] = useState('individual'); // 'individual' or 'team'
@@ -64,7 +64,7 @@ export const ProblemDetailPage = ({ problemId, navigate }) => {
       try {
         const p = await apiRequest(`/problems/${problemId}`);
         setProblem(p);
-        
+
         try {
           const ai = await apiRequest(`/problems/${problemId}/analysis`);
           setAiAnalysis(ai);
@@ -127,7 +127,7 @@ export const ProblemDetailPage = ({ problemId, navigate }) => {
         relevant_experience: experience,
         estimated_timeline_weeks: parseFloat(timelineWeeks),
         weekly_availability_hours: parseFloat(weeklyHours),
-        team_composition_notes: solverTab === 'team' ? `College Team: ${teamName}` : null
+        team_composition_notes: solverTab === 'team' ? `Team: ${teamName}` : null
       });
 
       if (solverTab === 'team') {
@@ -163,7 +163,7 @@ export const ProblemDetailPage = ({ problemId, navigate }) => {
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
-      
+
       {/* Back button */}
       <button
         onClick={() => navigate('/problems')}
@@ -272,7 +272,7 @@ export const ProblemDetailPage = ({ problemId, navigate }) => {
               </span>
             </div>
             <span className="text-xs text-emerald-800 font-medium">
-              Accepting Individual Solver & College Team Proposals
+              Accepting Individual Solver & Team Proposals
             </span>
           </div>
         )}
@@ -282,17 +282,15 @@ export const ProblemDetailPage = ({ problemId, navigate }) => {
           <div className="flex items-center space-x-2">
             <button
               onClick={() => setActiveTab('overview')}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-colors ${
-                activeTab === 'overview' ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-              }`}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-colors ${activeTab === 'overview' ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                }`}
             >
               Problem Details
             </button>
             <button
               onClick={() => setActiveTab('ai_analysis')}
-              className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center space-x-1.5 transition-colors ${
-                activeTab === 'ai_analysis' ? 'bg-emerald-700 text-white shadow-xs' : 'bg-emerald-50 text-emerald-800 hover:bg-emerald-100'
-              }`}
+              className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center space-x-1.5 transition-colors ${activeTab === 'ai_analysis' ? 'bg-emerald-700 text-white shadow-xs' : 'bg-emerald-50 text-emerald-800 hover:bg-emerald-100'
+                }`}
             >
               <Sparkles className="w-3.5 h-3.5" />
               <span>AI Problem Report {aiAnalysis ? `(v${aiAnalysis.version})` : ''}</span>
@@ -343,9 +341,9 @@ export const ProblemDetailPage = ({ problemId, navigate }) => {
       {/* Tab 1: Overview */}
       {activeTab === 'overview' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          
+
           <div className="lg:col-span-2 space-y-6">
-            
+
             {/* Description */}
             <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-3">
               <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wide">
@@ -378,7 +376,7 @@ export const ProblemDetailPage = ({ problemId, navigate }) => {
               <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wide">
                 Agreed Deliverables & Acceptance Standards
               </h3>
-              
+
               <div className="space-y-3">
                 <div className="p-4 bg-slate-50 rounded-xl border border-slate-200">
                   <h4 className="text-xs font-bold text-slate-800 mb-1">Expected Deliverables:</h4>
@@ -417,7 +415,7 @@ export const ProblemDetailPage = ({ problemId, navigate }) => {
 
           {/* Sidebar Specifications */}
           <div className="space-y-6">
-            
+
             <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
               <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wide">
                 Required Technical Skills
@@ -466,7 +464,7 @@ export const ProblemDetailPage = ({ problemId, navigate }) => {
             </div>
           ) : (
             <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-xs space-y-6">
-              
+
               <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-100">
                 <div>
                   <div className="flex items-center space-x-2">
@@ -574,7 +572,7 @@ export const ProblemDetailPage = ({ problemId, navigate }) => {
         </div>
       )}
 
-      {/* Application Modal with Individual & College Team Tabs */}
+      {/* Application Modal with Individual & Team Tabs */}
       {applyModalOpen && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
           <div className="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 space-y-5 shadow-2xl my-8 max-h-[92vh] overflow-y-auto">
@@ -605,17 +603,17 @@ export const ProblemDetailPage = ({ problemId, navigate }) => {
                 onClick={() => setSolverTab('team')}
                 className={`py-2 rounded-lg transition-colors ${solverTab === 'team' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500'}`}
               >
-                College Team
+                Team
               </button>
             </div>
 
             <form onSubmit={handleApply} className="space-y-4 text-xs">
-              
-              {/* College Team Section */}
+
+              {/* Team Section */}
               {solverTab === 'team' && (
                 <div className="p-4 bg-blue-50/70 border border-blue-200 rounded-2xl space-y-3">
                   <div className="flex items-center justify-between">
-                    <h4 className="font-bold text-blue-950 text-xs">College Team Information</h4>
+                    <h4 className="font-bold text-blue-950 text-xs">Team Information</h4>
                     <span className="text-[10px] text-blue-700 bg-blue-100 px-2 py-0.5 rounded-full font-semibold">
                       Email Dispatch Active
                     </span>
