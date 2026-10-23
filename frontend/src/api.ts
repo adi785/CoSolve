@@ -7,8 +7,12 @@ export interface User {
   full_name: string;
   role: 'provider' | 'solver' | 'organization' | 'admin' | 'institution';
   verification_status: string;
-  reputation_score?: number;
   phone?: string;
+  address?: string;
+  roll_number?: string;
+  college_name?: string;
+  avatar_url?: string;
+  reputation_score?: number;
   created_at?: string;
 }
 
@@ -42,6 +46,20 @@ export interface DemoUser {
   email: string;
   role: string;
   entity: string;
+}
+
+export interface StudentDirectoryItem {
+  id: string;
+  full_name: string;
+  roll_number: string;
+  email: string;
+  phone: string;
+  college_name: string;
+  avatar_url: string;
+  solved_count: number;
+  ongoing_count: number;
+  unsuccessful_count: number;
+  skills: string[];
 }
 
 export class ApiClient {
@@ -96,10 +114,10 @@ export class ApiClient {
   }
 
   // Auth Endpoints
-  static async login(email: string, password: string): Promise<{ access_token: string; user: User }> {
+  static async login(emailOrPhone: string, password: string, otp?: string): Promise<{ access_token: string; user: User }> {
     const data = await this.request<{ access_token: string; user: User }>('/auth/login', {
       method: 'POST',
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ email: emailOrPhone, password, otp }),
     });
     this.setAuth(data.access_token, data.user);
     return data;
@@ -110,10 +128,18 @@ export class ApiClient {
     password: string;
     full_name: string;
     role: string;
+    phone?: string;
+    address?: string;
+    aadhaar_number?: string;
+    roll_number?: string;
+    college_name?: string;
     skills?: string[];
-    department?: string;
-    year_of_study?: number;
-    institution_id?: string;
+    aicte_code?: string;
+    spoc_name?: string;
+    spoc_phone?: string;
+    spoc_email?: string;
+    logo_url?: string;
+    avatar_url?: string;
   }): Promise<{ access_token: string; user: User }> {
     const data = await this.request<{ access_token: string; user: User }>('/auth/register', {
       method: 'POST',
@@ -121,6 +147,20 @@ export class ApiClient {
     });
     this.setAuth(data.access_token, data.user);
     return data;
+  }
+
+  static async sendOtp(phone_or_email: string, purpose: string = "verification"): Promise<{ success: boolean; message: string; demo_code?: string }> {
+    return this.request('/auth/send-otp', {
+      method: 'POST',
+      body: JSON.stringify({ phone_or_email, purpose }),
+    });
+  }
+
+  static async forgotPassword(email_or_phone: string): Promise<{ success: boolean; message: string }> {
+    return this.request('/auth/forgot-password', {
+      method: 'POST',
+      body: JSON.stringify({ email_or_phone }),
+    });
   }
 
   static async getMe(): Promise<User> {
@@ -159,6 +199,13 @@ export class ApiClient {
     });
   }
 
+  static async getProviderStats(): Promise<{
+    pie_chart: { problems_accepted: number; problems_rejected: number };
+    stats: { total_submitted: number; pending_review: number; currently_being_solved: number; completed: number };
+  }> {
+    return this.request('/problems/provider/stats');
+  }
+
   // Apply to Problem (Individual or Team)
   static async applyToProblem(problemId: string, payload: {
     proposal_text: string;
@@ -172,6 +219,32 @@ export class ApiClient {
     return this.request(`/problems/${problemId}/apply`, {
       method: 'POST',
       body: JSON.stringify(payload),
+    });
+  }
+
+  // Solver Endpoints
+  static async getSolverStats(): Promise<{
+    pie_chart: { problems_solved: number; problems_ongoing: number; problems_failed: number };
+    individual_projects: any[];
+    team_projects: any[];
+  }> {
+    return this.request('/solver/dashboard-stats');
+  }
+
+  static async getSkills(): Promise<any[]> {
+    return this.request('/solver/skills');
+  }
+
+  static async addSkill(skill_name: string): Promise<any> {
+    return this.request('/solver/skills', {
+      method: 'POST',
+      body: JSON.stringify({ skill_name }),
+    });
+  }
+
+  static async deleteSkill(skill_id: string): Promise<any> {
+    return this.request(`/solver/skills/${skill_id}`, {
+      method: 'DELETE',
     });
   }
 
@@ -192,5 +265,17 @@ export class ApiClient {
   // Organizations
   static async getOrganizations(): Promise<any[]> {
     return this.request<any[]>('/organizations');
+  }
+
+  static async getOrgStudents(search?: string, sortBy?: string): Promise<StudentDirectoryItem[]> {
+    const params = new URLSearchParams();
+    if (search) params.append('search', search);
+    if (sortBy) params.append('sort_by', sortBy);
+    const q = params.toString() ? `?${params.toString()}` : '';
+    return this.request(`/organizations/my/students${q}`);
+  }
+
+  static async getOrgDashboardStats(): Promise<any> {
+    return this.request('/organizations/my/dashboard-stats');
   }
 }

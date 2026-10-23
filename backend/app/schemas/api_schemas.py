@@ -7,21 +7,33 @@ class UserRegister(BaseModel):
     email: EmailStr
     password: str = Field(..., min_length=6)
     full_name: str
-    role: str = "solver"  # "provider", "solver", "admin"
+    role: str = "solver"  # "provider", "solver", "organization", "admin"
+    phone: Optional[str] = None
+    address: Optional[str] = None
+    aadhaar_number: Optional[str] = None
+    roll_number: Optional[str] = None
+    college_name: Optional[str] = None
+    avatar_url: Optional[str] = None
+    skills: Optional[List[str]] = None
+    aicte_code: Optional[str] = None
+    spoc_name: Optional[str] = None
+    spoc_phone: Optional[str] = None
+    spoc_email: Optional[str] = None
+    logo_url: Optional[str] = None
     provider_type: Optional[str] = None  # "individual", "panchayat_rep"
     panchayat_name: Optional[str] = None
     panchayat_state: Optional[str] = None
     panchayat_district: Optional[str] = None
     designation: Optional[str] = None
     is_student: Optional[bool] = False
-    college_name: Optional[str] = None
     graduation_year: Optional[int] = None
     location: Optional[str] = None
     bio: Optional[str] = None
 
 class UserLogin(BaseModel):
-    email: EmailStr
+    email: str  # Email or Phone Number
     password: str
+    otp: Optional[str] = None
 
 class Token(BaseModel):
     access_token: str
