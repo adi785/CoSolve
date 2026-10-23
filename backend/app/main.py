@@ -45,6 +45,34 @@ def _migrate_sqlite_schema():
                 conn.exec_driver_sql("ALTER TABLE projects ADD COLUMN last_activity_at DATETIME")
             if "last_progress_updated_at" not in proj_cols:
                 conn.exec_driver_sql("ALTER TABLE projects ADD COLUMN last_progress_updated_at DATETIME")
+
+            # Check profiles table columns for PRD compliance
+            prof_cols = [row[1] for row in conn.exec_driver_sql("PRAGMA table_info(profiles)")]
+            if "roll_number" not in prof_cols:
+                conn.exec_driver_sql("ALTER TABLE profiles ADD COLUMN roll_number VARCHAR")
+            if "aadhaar_number" not in prof_cols:
+                conn.exec_driver_sql("ALTER TABLE profiles ADD COLUMN aadhaar_number VARCHAR")
+            if "address" not in prof_cols:
+                conn.exec_driver_sql("ALTER TABLE profiles ADD COLUMN address TEXT")
+            if "is_phone_verified" not in prof_cols:
+                conn.exec_driver_sql("ALTER TABLE profiles ADD COLUMN is_phone_verified BOOLEAN DEFAULT 1")
+            if "is_aadhaar_verified" not in prof_cols:
+                conn.exec_driver_sql("ALTER TABLE profiles ADD COLUMN is_aadhaar_verified BOOLEAN DEFAULT 1")
+
+            # Check organizations table columns for PRD compliance
+            org_cols = [row[1] for row in conn.exec_driver_sql("PRAGMA table_info(organizations)")]
+            if "aicte_code" not in org_cols:
+                conn.exec_driver_sql("ALTER TABLE organizations ADD COLUMN aicte_code VARCHAR")
+            if "spoc_name" not in org_cols:
+                conn.exec_driver_sql("ALTER TABLE organizations ADD COLUMN spoc_name VARCHAR")
+            if "spoc_phone" not in org_cols:
+                conn.exec_driver_sql("ALTER TABLE organizations ADD COLUMN spoc_phone VARCHAR")
+            if "spoc_email" not in org_cols:
+                conn.exec_driver_sql("ALTER TABLE organizations ADD COLUMN spoc_email VARCHAR")
+            if "address" not in org_cols:
+                conn.exec_driver_sql("ALTER TABLE organizations ADD COLUMN address VARCHAR")
+            if "logo_url" not in org_cols:
+                conn.exec_driver_sql("ALTER TABLE organizations ADD COLUMN logo_url VARCHAR")
             conn.commit()
     except Exception as e:
         print(f"Schema migration note: {e}")
@@ -60,7 +88,15 @@ app = FastAPI(
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allows all origins for local dev
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:5174",
+        "http://127.0.0.1:5174",
+        "http://localhost:3000",
+        "http://127.0.0.1:3000"
+    ],
+    allow_origin_regex=r"https?://(localhost|127\.0\.0\.1)(:[0-9]+)?",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
