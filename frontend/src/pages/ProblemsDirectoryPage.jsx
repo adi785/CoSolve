@@ -193,6 +193,54 @@ export const ProblemsDirectoryPage = ({ navigate }) => {
                     ))}
                   </div>
 
+                  {/* Challenge Progress & Inactivity Insight Block */}
+                  {prob.is_taken ? (
+                    <div className="p-3 bg-amber-50/90 border border-amber-200 rounded-xl space-y-2">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-1.5">
+                          <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                          <span className="font-bold text-amber-900 text-[11px] tracking-wide uppercase">
+                            TAKEN • IN PROGRESS
+                          </span>
+                        </div>
+                        <span className="font-extrabold text-amber-950 text-xs">
+                          {Math.round(prob.progress_percentage || 0)}%
+                        </span>
+                      </div>
+
+                      {/* Progress Bar */}
+                      <div className="w-full bg-amber-200/70 rounded-full h-1.5 overflow-hidden">
+                        <div
+                          className="bg-amber-600 h-1.5 rounded-full transition-all"
+                          style={{ width: `${Math.min(100, Math.max(5, prob.progress_percentage || 0))}%` }}
+                        />
+                      </div>
+
+                      <div className="flex items-center justify-between text-[10px] text-amber-900 pt-0.5">
+                        <span className="truncate max-w-[140px]">
+                          Solver: <strong>{prob.taken_by || 'Assigned Solver'}</strong>
+                        </span>
+                        <span>
+                          {prob.days_until_inactivity_warning <= 2 ? (
+                            <span className="text-red-700 font-bold">Auto-reopens in {prob.days_until_inactivity_warning}d</span>
+                          ) : (
+                            <span>Active {prob.last_activity_days_ago === 0 ? 'today' : `${prob.last_activity_days_ago}d ago`}</span>
+                          )}
+                        </span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="p-2.5 bg-emerald-50/80 border border-emerald-200 rounded-xl flex items-center justify-between text-xs">
+                      <div className="flex items-center space-x-1.5">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                        <span className="font-bold text-emerald-900 text-[11px] tracking-wide uppercase">
+                          AVAILABLE • NOT TAKEN
+                        </span>
+                      </div>
+                      <span className="text-[10px] text-emerald-700 font-medium">Individual or Team</span>
+                    </div>
+                  )}
+
                   <div className="space-y-1.5 pt-2 border-t border-slate-100 text-xs text-slate-500">
                     <div className="flex items-center space-x-2">
                       <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />

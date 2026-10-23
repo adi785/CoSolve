@@ -96,16 +96,16 @@ export const AdminDashboard = ({ navigate }) => {
   if (!user || user.role !== 'admin') {
     return (
       <div className="max-w-3xl mx-auto py-20 text-center space-y-4">
-        <h2 className="text-base font-bold text-rose-800">Administrative Privileges Required</h2>
+        <h2 className="text-base font-bold text-rose-800">Institution Authority Privileges Required</h2>
         <p className="text-xs text-slate-500">
-          Switch to Dr. Sunita Rao via the Demo Persona Switcher at the top right to access moderation.
+          Switch to Dr. Sunita Rao via Demo Persona Switcher to access institution governance.
         </p>
       </div>
     );
   }
 
   if (loading) {
-    return <div className="text-center py-24 text-slate-400 text-xs">Loading administrative control center...</div>;
+    return <div className="text-center py-24 text-slate-400 text-xs">Loading institution control center...</div>;
   }
 
   return (
@@ -115,13 +115,13 @@ export const AdminDashboard = ({ navigate }) => {
       <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="space-y-1">
           <Badge variant="danger" size="sm">
-            <ShieldAlert className="w-3.5 h-3.5 mr-1" /> Platform Administration
+            <ShieldAlert className="w-3.5 h-3.5 mr-1" /> Institution Authority
           </Badge>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-            Moderation & Compliance Center
+            Governance & Moderation Center
           </h1>
           <p className="text-xs text-slate-500">
-            Logged in as <strong className="text-slate-800">{user.full_name}</strong>. Maintain platform integrity, verify authority, moderate challenges, and resolve disputes.
+            Institution Authority: <strong className="text-slate-800">{user.full_name}</strong>. Manage challenge moderation, credential verification, and dispute governance.
           </p>
         </div>
       </div>

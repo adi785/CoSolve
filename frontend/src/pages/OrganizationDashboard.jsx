@@ -123,12 +123,12 @@ export const OrganizationDashboard = ({ navigate }) => {
       {/* Top Banner */}
       <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="space-y-1">
-          <Badge variant="published" size="sm">Organization Solver Workspace</Badge>
+          <Badge variant="published" size="sm">Institution Workspace</Badge>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-            {orgDetail ? orgDetail.name : "Organization Hub"}
+            {orgDetail ? orgDetail.name : "Institution Hub"}
           </h1>
           <p className="text-xs text-slate-500">
-            Coordinating university clubs, research labs, NGOs, and Self-Help Groups (SHGs) for collective civic impact.
+            Coordinating colleges, universities, research labs, NGOs, and student bodies for collective impact.
           </p>
         </div>
 
@@ -137,19 +137,19 @@ export const OrganizationDashboard = ({ navigate }) => {
           className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl shadow-xs transition-colors flex items-center space-x-1.5 shrink-0"
         >
           <Building2 className="w-3.5 h-3.5" />
-          <span>Register New Organization</span>
+          <span>Register New Institution</span>
         </button>
       </div>
 
       {!orgDetail ? (
         <div className="bg-white p-12 rounded-3xl border border-slate-200 text-center space-y-3">
           <Building2 className="w-8 h-8 text-slate-300 mx-auto" />
-          <p className="text-sm font-bold text-slate-800">You are not associated with any organization yet.</p>
+          <p className="text-sm font-bold text-slate-800">You are not associated with any institution yet.</p>
           <button
             onClick={() => setCreateModalOpen(true)}
             className="px-4 py-2 bg-emerald-600 text-white text-xs font-bold rounded-xl"
           >
-            Create Organization Profile
+            Create Institution Profile
           </button>
         </div>
       ) : (

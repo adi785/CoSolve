@@ -105,6 +105,18 @@ export const Navbar = ({ currentRoute, navigate }) => {
               </>
             )}
 
+            {user && user.role === 'organization' && (
+              <button
+                onClick={() => navigate('/organization')}
+                className={`px-3 py-1.5 rounded-lg transition-colors flex items-center space-x-1.5 ${
+                  currentRoute === '/organization' ? 'text-amber-700 bg-amber-50 font-semibold' : 'hover:text-slate-900 hover:bg-slate-100'
+                }`}
+              >
+                <Layers className="w-4 h-4 text-amber-600" />
+                <span>Institution Hub</span>
+              </button>
+            )}
+
             {user && user.role === 'admin' && (
               <button
                 onClick={() => navigate('/admin')}
@@ -113,7 +125,7 @@ export const Navbar = ({ currentRoute, navigate }) => {
                 }`}
               >
                 <ShieldAlert className="w-4 h-4 text-rose-600" />
-                <span>Admin Moderation</span>
+                <span>Institution Authority</span>
               </button>
             )}
           </nav>
@@ -267,12 +279,20 @@ export const Navbar = ({ currentRoute, navigate }) => {
                   </button>
                 </>
               )}
+              {user.role === 'organization' && (
+                <button
+                  onClick={() => { navigate('/organization'); setMobileMenuOpen(false); }}
+                  className="w-full text-left px-3 py-2 text-sm font-medium text-amber-700 rounded-lg hover:bg-amber-50"
+                >
+                  Institution Hub
+                </button>
+              )}
               {user.role === 'admin' && (
                 <button
                   onClick={() => { navigate('/admin'); setMobileMenuOpen(false); }}
                   className="w-full text-left px-3 py-2 text-sm font-medium text-rose-700 rounded-lg hover:bg-rose-50"
                 >
-                  Admin Moderation
+                  Institution Authority
                 </button>
               )}
             </>

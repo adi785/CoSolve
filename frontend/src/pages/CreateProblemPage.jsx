@@ -38,8 +38,8 @@ export const CreateProblemPage = ({ navigate }) => {
     acceptance_criteria_text: '',
     testing_approach: '',
     adoption_plan: '',
-    funding_model: 'grant_funded',
-    funding_amount: 25000,
+    funding_model: 'voluntary',
+    funding_amount: 0,
     funding_currency: 'INR',
     sponsor_details: '',
     award_conditions: '',
@@ -47,7 +47,7 @@ export const CreateProblemPage = ({ navigate }) => {
   });
 
   const [submitting, setSubmitting] = useState(false);
-  const [step, setStep] = useState(1); // 1: Core Problem, 2: Technical Scope, 3: Funding & Moderation
+  const [step, setStep] = useState(1); // 1: Problem & Locality, 2: Scope & Criteria
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -102,7 +102,7 @@ export const CreateProblemPage = ({ navigate }) => {
       </div>
 
       {/* Progress Steps */}
-      <div className="grid grid-cols-3 gap-2 p-1.5 bg-slate-100 rounded-xl text-xs font-bold text-center">
+      <div className="grid grid-cols-2 gap-2 p-1.5 bg-slate-100 rounded-xl text-xs font-bold text-center">
         <button
           type="button"
           onClick={() => setStep(1)}
@@ -116,13 +116,6 @@ export const CreateProblemPage = ({ navigate }) => {
           className={`py-2 rounded-lg transition-colors ${step === 2 ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500'}`}
         >
           2. Scope & Criteria
-        </button>
-        <button
-          type="button"
-          onClick={() => setStep(3)}
-          className={`py-2 rounded-lg transition-colors ${step === 3 ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500'}`}
-        >
-          3. Funding & Review
         </button>
       </div>
 
@@ -361,105 +354,12 @@ export const CreateProblemPage = ({ navigate }) => {
                 Back
               </button>
               <button
-                type="button"
-                onClick={() => setStep(3)}
-                className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl flex items-center space-x-1"
-              >
-                <span>Continue to Funding</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Step 3: Funding & Moderation Submission */}
-        {step === 3 && (
-          <div className="space-y-4">
-            <h3 className="text-sm font-bold text-slate-900 pb-2 border-b border-slate-100">
-              Funding Terms & Submission
-            </h3>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div>
-                <label className="block font-bold text-slate-800 mb-1">Funding Model</label>
-                <select
-                  name="funding_model"
-                  value={formData.funding_model}
-                  onChange={handleChange}
-                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-500 text-xs"
-                >
-                  <option value="grant_funded">Grant-Funded</option>
-                  <option value="prize_based">Prize-Based Challenge</option>
-                  <option value="sponsored">Corporate / Foundation Sponsored</option>
-                  <option value="voluntary">Voluntary / Community Benefit</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block font-bold text-slate-800 mb-1">Funding Amount (INR)</label>
-                <input
-                  type="number"
-                  name="funding_amount"
-                  value={formData.funding_amount}
-                  onChange={handleChange}
-                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-500 text-xs"
-                />
-              </div>
-
-              <div>
-                <label className="block font-bold text-slate-800 mb-1">Urgency</label>
-                <select
-                  name="urgency"
-                  value={formData.urgency}
-                  onChange={handleChange}
-                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-500 text-xs"
-                >
-                  <option value="low">Low</option>
-                  <option value="medium">Medium</option>
-                  <option value="high">High</option>
-                  <option value="critical">Critical</option>
-                </select>
-              </div>
-            </div>
-
-            <div>
-              <label className="block font-bold text-slate-800 mb-1">Sponsor / Funding Body (if applicable)</label>
-              <input
-                type="text"
-                name="sponsor_details"
-                value={formData.sponsor_details}
-                onChange={handleChange}
-                placeholder="e.g. District Rural Development Agency (DRDA) Innovation Fund"
-                className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-500 text-xs"
-              />
-            </div>
-
-            <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-200 space-y-1.5">
-              <div className="flex items-center space-x-2 text-emerald-950 font-bold">
-                <Sparkles className="w-4 h-4 text-emerald-700" />
-                <span>AI Problem Analyst Workflow</span>
-              </div>
-              <p className="text-[11px] text-emerald-800 leading-relaxed">
-                Upon submitting, our AI module will decompose your inputs, extract stakeholder hypotheses, identify risk factors, and prepare a structured report. You will have full authority to edit and confirm the AI parameters before requesting moderator publication.
-              </p>
-            </div>
-
-            <div className="flex justify-between pt-2">
-              <button
-                type="button"
-                onClick={() => setStep(2)}
-                className="px-4 py-2 border border-slate-300 rounded-xl text-slate-700 font-semibold"
-              >
-                Back
-              </button>
-
-              <button
                 type="submit"
                 disabled={submitting}
                 className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-xs transition-colors flex items-center space-x-1.5"
               >
                 <Send className="w-3.5 h-3.5" />
-                <span>{submitting ? 'Analyzing Problem...' : 'Submit & Generate AI Report'}</span>
+                <span>{submitting ? 'Analyzing Problem...' : 'Submit Challenge & Generate AI Report'}</span>
               </button>
             </div>
           </div>

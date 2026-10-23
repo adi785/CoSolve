@@ -31,16 +31,16 @@ export const PersonaSwitcher = () => {
     },
     {
       label: "Dr. Vikram Mehta (RTIC Director)",
-      role: "Organization Solver Lead",
+      role: "Institution Lead",
       email: "vikram.mehta@ruraltech.org",
-      tag: "Organization Lead",
+      tag: "Institution Lead",
       badgeColor: "bg-amber-100 text-amber-800"
     },
     {
-      label: "Dr. Sunita Rao (Platform Admin)",
-      role: "Platform Administrator",
+      label: "Dr. Sunita Rao (Governance)",
+      role: "Institution Authority",
       email: "admin@samarthya.gov.in",
-      tag: "Administrator",
+      tag: "Institution Authority",
       badgeColor: "bg-rose-100 text-rose-800"
     }
   ];
@@ -80,7 +80,7 @@ export const PersonaSwitcher = () => {
               <p className="text-xs font-bold text-slate-900">1-Click Demo Persona Switcher</p>
             </div>
             <p className="text-[11px] text-slate-500 mt-0.5">
-              Instantly test workflows as a village provider, student solver, organization, or admin.
+              Instantly test workflows as a village provider, student solver, or institution.
             </p>
           </div>
 

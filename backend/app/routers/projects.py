@@ -565,6 +565,9 @@ def update_task_status(
         raise HTTPException(status_code=404, detail="Task not found")
 
     t.status = task_in.status
+    project = db.query(Project).filter(Project.id == project_id).first()
+    if project:
+        project.last_activity_at = datetime.utcnow()
     db.commit()
     return t
 
