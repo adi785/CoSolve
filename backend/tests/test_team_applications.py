@@ -83,7 +83,9 @@ def test_inactivity_revocation_and_cadence():
                 status="in_progress",
                 progress_percentage=20.0,
                 last_activity_at=datetime.utcnow() - timedelta(days=8),
-                charter_scope="Test Scope"
+                charter_scope="Test Scope",
+                charter_deliverables="Test Deliverables",
+                charter_acceptance_criteria="Test Acceptance Criteria"
             )
             db.add(project)
             db.commit()
