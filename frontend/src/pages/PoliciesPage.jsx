@@ -5,19 +5,19 @@ import { ShieldCheck, Lock, Scale, AlertTriangle, FileText } from 'lucide-react'
 export const PoliciesPage = () => {
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10 text-xs">
-      
+
       <div className="space-y-2">
         <Badge variant="published" size="sm">Governance & Legal Framework</Badge>
         <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
           Platform Governance, Privacy & IP Policies
         </h1>
         <p className="text-sm text-slate-600 leading-relaxed">
-          Samarthya coordinates technology deployment with ethical accountability, privacy by design, and strict verification protocols.
+          Co-Solve coordinates technology deployment with ethical accountability, privacy by design, and strict verification protocols.
         </p>
       </div>
 
       <div className="space-y-6">
-        
+
         {/* Privacy & Identity */}
         <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-xs space-y-3">
           <div className="flex items-center space-x-2 text-slate-900">
@@ -41,7 +41,7 @@ export const PoliciesPage = () => {
             <h2 className="text-sm font-bold uppercase tracking-wide">2. Intellectual Property & Community Licensing</h2>
           </div>
           <p className="text-slate-600 leading-relaxed">
-            All societal challenges published on Samarthya default to Public Good open-source licensing (MIT / CERN Open Hardware Licence). Solutions created to serve rural community needs cannot be locked behind proprietary paywalls or punitive licensing terms without prior written consent from the community authority.
+            All societal challenges published on Co-Solve default to Public Good open-source licensing (MIT / CERN Open Hardware Licence). Solutions created to serve rural community needs cannot be locked behind proprietary paywalls or punitive licensing terms without prior written consent from the community authority.
           </p>
         </div>
 

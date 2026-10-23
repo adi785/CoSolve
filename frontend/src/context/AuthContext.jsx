@@ -5,7 +5,7 @@ const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem('samarthya_token') || null);
+  const [token, setToken] = useState(localStorage.getItem('Co-Solve_token') || null);
   const [loading, setLoading] = useState(true);
   const [demoAccounts, setDemoAccounts] = useState([]);
   const [notifications, setNotifications] = useState([]);
@@ -51,7 +51,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     const data = await apiRequest('/auth/login', 'POST', { email, password });
-    localStorage.setItem('samarthya_token', data.access_token);
+    localStorage.setItem('Co-Solve_token', data.access_token);
     setToken(data.access_token);
     setUser(data.user);
     fetchNotifications();
@@ -60,7 +60,7 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (userData) => {
     const data = await apiRequest('/auth/register', 'POST', userData);
-    localStorage.setItem('samarthya_token', data.access_token);
+    localStorage.setItem('Co-Solve_token', data.access_token);
     setToken(data.access_token);
     setUser(data.user);
     fetchNotifications();
@@ -68,7 +68,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
-    localStorage.removeItem('samarthya_token');
+    localStorage.removeItem('Co-Solve_token');
     setToken(null);
     setUser(null);
     setNotifications([]);

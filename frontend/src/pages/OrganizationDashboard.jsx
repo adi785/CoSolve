@@ -2,13 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { apiRequest } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import { Badge } from '../components/Badge';
-import { 
-  Building2, 
-  Users, 
-  Sparkles, 
-  Plus, 
-  Mail, 
-  Check, 
+import {
+  Building2,
+  Users,
+  Sparkles,
+  Plus,
+  Mail,
+  Check,
   ExternalLink,
   ShieldCheck,
   ChevronRight
@@ -80,7 +80,7 @@ export const OrganizationDashboard = ({ navigate }) => {
       await fetch(`/api/organizations/${selectedOrg.id}/members?email=${encodeURIComponent(inviteEmail.trim())}&role=${encodeURIComponent(inviteRole)}`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('samarthya_token')}`
+          'Authorization': `Bearer ${localStorage.getItem('Co-Solve_token')}`
         }
       });
       alert(`Member ${inviteEmail} successfully added to organization!`);
@@ -119,7 +119,7 @@ export const OrganizationDashboard = ({ navigate }) => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
-      
+
       {/* Top Banner */}
       <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="space-y-1">
@@ -154,10 +154,10 @@ export const OrganizationDashboard = ({ navigate }) => {
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          
+
           {/* Left 2 Cols: Members & Recommendations */}
           <div className="lg:col-span-2 space-y-8">
-            
+
             {/* Team Roster & Add Member */}
             <div className="bg-white p-6 sm:p-7 rounded-3xl border border-slate-200 shadow-xs space-y-6">
               <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-100">
@@ -276,12 +276,12 @@ export const OrganizationDashboard = ({ navigate }) => {
 
           {/* Right Sidebar: Aggregated Skills & Specs */}
           <div className="space-y-6">
-            
+
             <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-xs space-y-4 text-xs">
               <h3 className="font-bold text-slate-900 uppercase tracking-wide">
                 Organization Profile
               </h3>
-              
+
               <div className="space-y-2">
                 <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
                   <span className="text-slate-400 text-[10px] block">Registration No.</span>

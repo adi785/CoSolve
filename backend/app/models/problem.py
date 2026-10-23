@@ -92,8 +92,8 @@ class AIProblemAnalysis(Base):
     id = Column(String(36), primary_key=True, default=generate_uuid)
     problem_id = Column(String(36), ForeignKey("problems.id"), nullable=False)
     version = Column(Integer, default=1)
-    provider = Column(String(50), default="samarthya-ai-engine")  # "mock", "gemini-1.5-flash", "openai-gpt-4o"
-    model_name = Column(String(100), default="samarthya-v1")
+    provider = Column(String(50), default="Co-Solve-ai-engine")  # "mock", "gemini-1.5-flash", "openai-gpt-4o"
+    model_name = Column(String(100), default="Co-Solve-v1")
     
     # Structured outputs (stored as JSON strings)
     executive_summary = Column(Text, nullable=False)

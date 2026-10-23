@@ -2,16 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { apiRequest } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import { Badge } from '../components/Badge';
-import { 
-  Sparkles, 
-  MapPin, 
-  IndianRupee, 
-  ArrowRight, 
-  Check, 
-  ChevronDown, 
-  ChevronUp, 
-  Clock, 
-  Layers, 
+import {
+  Sparkles,
+  MapPin,
+  IndianRupee,
+  ArrowRight,
+  Check,
+  ChevronDown,
+  ChevronUp,
+  Clock,
+  Layers,
   Award,
   AlertCircle
 } from 'lucide-react';
@@ -56,7 +56,7 @@ export const SolverRecommendationsPage = ({ navigate }) => {
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
-      
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="space-y-1">
@@ -90,7 +90,7 @@ export const SolverRecommendationsPage = ({ navigate }) => {
           {recommendations.map(({ problem, match }) => {
             const isExpanded = expandedId === problem.id;
             const score = match.match_score;
-            
+
             // Score color styling
             let scoreBg = "bg-emerald-50 text-emerald-900 border-emerald-300";
             if (score < 70) scoreBg = "bg-amber-50 text-amber-900 border-amber-300";
@@ -100,7 +100,7 @@ export const SolverRecommendationsPage = ({ navigate }) => {
                 key={problem.id}
                 className="bg-white rounded-3xl border border-slate-200 hover:border-emerald-300 p-6 sm:p-7 shadow-xs transition-all space-y-5"
               >
-                
+
                 {/* Top Bar */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div className="space-y-1 flex-1">
@@ -185,7 +185,7 @@ export const SolverRecommendationsPage = ({ navigate }) => {
                 {isExpanded && (
                   <div className="p-4 bg-emerald-50/50 rounded-2xl border border-emerald-100 space-y-2 text-xs text-emerald-950">
                     <span className="font-bold block uppercase text-[10px] tracking-wide text-emerald-800">
-                      Why the matching engine recommends this:
+                      Whyrecommends this:
                     </span>
                     <ul className="space-y-1 list-disc list-inside">
                       {match.reasons.map((r, i) => (

@@ -36,7 +36,7 @@ ENV/
 # Database & local runtime files
 *.db
 *.sqlite3
-samarthya.db
+Co-Solve.db
 
 # Environment variables (keep templates like .env.example)
 .env

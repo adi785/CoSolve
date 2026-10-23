@@ -43,14 +43,14 @@ export const LoginPage = ({ navigate }) => {
 
   return (
     <div className="max-w-md mx-auto px-4 py-16 space-y-6">
-      
+
       {/* Header */}
       <div className="text-center space-y-2">
         <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center text-white font-bold text-xl mx-auto shadow-md">
           🌱
         </div>
         <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">
-          Sign In to Samarthya
+          Sign In to Co-Solve
         </h1>
         <p className="text-xs text-slate-500">
           AI-Powered Grassroots Societal Challenge Coordination Platform
@@ -84,7 +84,7 @@ export const LoginPage = ({ navigate }) => {
 
           <button
             type="button"
-            onClick={() => handleQuickLogin('admin@samarthya.gov.in')}
+            onClick={() => handleQuickLogin('admin@Co-Solve.gov.in')}
             className="w-full text-left px-3 py-1.5 bg-white hover:bg-emerald-100/50 rounded-xl border border-emerald-200 font-semibold text-slate-800 text-[11px] flex items-center justify-between"
           >
             <span>Dr. Sunita Rao (Platform Moderator)</span>
@@ -95,7 +95,7 @@ export const LoginPage = ({ navigate }) => {
 
       {/* Main Login Form */}
       <form onSubmit={handleSubmit} className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-xs space-y-4 text-xs">
-        
+
         {error && (
           <div className="p-3 bg-rose-50 text-rose-700 border border-rose-200 rounded-xl text-xs font-semibold">
             {error}

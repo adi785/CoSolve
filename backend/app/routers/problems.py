@@ -95,8 +95,8 @@ def create_problem(
         ai_record = AIProblemAnalysis(
             problem_id=db_problem.id,
             version=1,
-            provider=analysis_data.get("provider", "samarthya-ai"),
-            model_name=analysis_data.get("model_name", "samarthya-v1"),
+            provider=analysis_data.get("provider", "Co-Solve-ai"),
+            model_name=analysis_data.get("model_name", "Co-Solve-v1"),
             executive_summary=analysis_data.get("executive_summary", ""),
             problem_statement=analysis_data.get("problem_statement", ""),
             affected_stakeholders=json.dumps(analysis_data.get("affected_stakeholders", [])),
@@ -428,8 +428,8 @@ def trigger_ai_analysis(
     ai_record = AIProblemAnalysis(
         problem_id=problem.id,
         version=version,
-        provider=analysis_data.get("provider", "samarthya-ai"),
-        model_name=analysis_data.get("model_name", "samarthya-v1"),
+        provider=analysis_data.get("provider", "Co-Solve-ai"),
+        model_name=analysis_data.get("model_name", "Co-Solve-v1"),
         executive_summary=analysis_data.get("executive_summary", ""),
         problem_statement=analysis_data.get("problem_statement", ""),
         affected_stakeholders=json.dumps(analysis_data.get("affected_stakeholders", [])),

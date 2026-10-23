@@ -36,7 +36,7 @@ def seed_database():
     db = SessionLocal()
     try:
         # Check if already seeded
-        existing_admin = db.query(Profile).filter(Profile.email == "admin@samarthya.gov.in").first()
+        existing_admin = db.query(Profile).filter(Profile.email == "admin@Co-Solve.gov.in").first()
         if existing_admin:
             print("Database already contains seed data. Skipping re-seed.")
             return
@@ -46,7 +46,7 @@ def seed_database():
         # 1. CREATE USERS
         # Admin
         admin_user = Profile(
-            email="admin@samarthya.gov.in",
+            email="admin@Co-Solve.gov.in",
             hashed_password=get_password_hash("AdminSecretPass123!"),
             full_name="Dr. Sunita Rao",
             role="admin",
@@ -352,8 +352,8 @@ def seed_database():
             ai_obj = AIProblemAnalysis(
                 problem_id=prob.id,
                 version=1,
-                provider="samarthya-ai-engine",
-                model_name="samarthya-analyst-v1.0",
+                provider="Co-Solve-ai-engine",
+                model_name="Co-Solve-analyst-v1.0",
                 executive_summary=analysis["executive_summary"],
                 problem_statement=analysis["problem_statement"],
                 affected_stakeholders=json.dumps(analysis["affected_stakeholders"]),
@@ -413,7 +413,7 @@ def seed_database():
             charter_agreed_solver=True,
             charter_agreed_provider=True,
             prototype_demo_url="https://jal-drishti-telemetry.example.org",
-            prototype_repo_url="https://github.com/samarthya-civic/jal-drishti-node",
+            prototype_repo_url="https://github.com/Co-Solve-civic/jal-drishti-node",
             prototype_video_url="https://youtube.com/watch?v=sample-jal-drishti-demo",
             prototype_documentation="Comprehensive hardware documentation including wiring diagrams, component BOM (Total cost Rs 6,800), and firmware flashing instructions.",
             prototype_test_instructions="1. Power on unit via solar switch; 2. Observe LED status indicator green heartbeat; 3. Dip probe into test solution; 4. Verify SMS received on registered panchayat mobile number.",
@@ -439,7 +439,7 @@ def seed_database():
 
         # Deliverables
         d1 = Deliverable(project_id=proj1.id, milestone_id=m1.id, submitted_by_id=solver_student_1.id, title="Sensor Calibration Certificate & Data Logs", submission_type="report", status="approved")
-        d2 = Deliverable(project_id=proj1.id, milestone_id=m2.id, submitted_by_id=solver_student_1.id, title="Jal-Drishti Firmware & PCB Gerber Files", submission_type="code", external_link="https://github.com/samarthya-civic/jal-drishti-node", status="approved")
+        d2 = Deliverable(project_id=proj1.id, milestone_id=m2.id, submitted_by_id=solver_student_1.id, title="Jal-Drishti Firmware & PCB Gerber Files", submission_type="code", external_link="https://github.com/Co-Solve-civic/jal-drishti-node", status="approved")
         d3 = Deliverable(project_id=proj1.id, milestone_id=m4.id, submitted_by_id=solver_student_1.id, title="Bilingual Marathi-English Caretaker Manual", submission_type="report", status="approved")
         db.add_all([d1, d2, d3])
 

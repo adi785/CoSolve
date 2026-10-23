@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { apiRequest } from '../api/client';
 import { Badge } from '../components/Badge';
-import { 
-  ArrowRight, 
-  Sparkles, 
-  CheckCircle2, 
-  ShieldCheck, 
-  Compass, 
-  Users, 
-  Layers, 
-  Award, 
+import {
+  ArrowRight,
+  Sparkles,
+  CheckCircle2,
+  ShieldCheck,
+  Compass,
+  Users,
+  Layers,
+  Award,
   TrendingUp,
   MapPin,
   Calendar,
@@ -59,12 +59,12 @@ export const LandingPage = ({ navigate }) => {
 
   return (
     <div className="space-y-16">
-      
+
       {/* Hero Section */}
       <section className="relative overflow-hidden pt-12 pb-16 lg:pt-20 lg:pb-24 bg-gradient-to-b from-emerald-50/60 via-slate-50 to-slate-50 border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto space-y-6">
-            
+
             <div className="inline-flex items-center space-x-2 bg-emerald-100/80 border border-emerald-300 text-emerald-800 px-3.5 py-1.5 rounded-full text-xs font-semibold shadow-xs">
               <Sparkles className="w-3.5 h-3.5 text-emerald-700 animate-pulse" />
               <span>AI-Powered Societal Challenge Coordination Platform</span>
@@ -269,7 +269,7 @@ export const LandingPage = ({ navigate }) => {
               onClick={() => navigate('/register')}
               className="px-6 py-3 rounded-xl bg-white text-emerald-900 font-bold text-sm shadow hover:bg-emerald-50 transition-all"
             >
-              Register on Samarthya
+              Register on Co-Solve
             </button>
             <button
               onClick={() => navigate('/how-it-works')}

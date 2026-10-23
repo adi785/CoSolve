@@ -2,9 +2,9 @@ import os
 from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
-    PROJECT_NAME: str = "Samarthya - AI Societal Challenge Platform"
-    DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./samarthya.db")
-    SECRET_KEY: str = os.getenv("SECRET_KEY", "samarthya-dev-insecure-secret-key-38291480183")
+    PROJECT_NAME: str = "Co-Solve - AI Societal Challenge Platform"
+    DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./Co-Solve.db")
+    SECRET_KEY: str = os.getenv("SECRET_KEY", "Co-Solve-dev-insecure-secret-key-38291480183")
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24
     

@@ -39,7 +39,7 @@ export const PersonaSwitcher = () => {
     {
       label: "Dr. Sunita Rao (Governance)",
       role: "Institution Authority",
-      email: "admin@samarthya.gov.in",
+      email: "admin@Co-Solve.gov.in",
       tag: "Institution Authority",
       badgeColor: "bg-rose-100 text-rose-800"
     }
@@ -92,9 +92,8 @@ export const PersonaSwitcher = () => {
                   key={p.email}
                   disabled={switching}
                   onClick={() => handleSelect(p.email)}
-                  className={`w-full text-left px-3 py-2.5 text-xs hover:bg-slate-50 transition-colors flex items-start justify-between ${
-                    isCurrent ? 'bg-emerald-50/60 font-semibold' : ''
-                  }`}
+                  className={`w-full text-left px-3 py-2.5 text-xs hover:bg-slate-50 transition-colors flex items-start justify-between ${isCurrent ? 'bg-emerald-50/60 font-semibold' : ''
+                    }`}
                 >
                   <div className="flex-1 pr-2">
                     <div className="flex items-center space-x-1.5">

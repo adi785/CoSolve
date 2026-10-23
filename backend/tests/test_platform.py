@@ -39,7 +39,7 @@ def test_login_demo_users():
 
     # Test logging in as Admin
     resp3 = client.post("/api/auth/login", json={
-        "email": "admin@samarthya.gov.in",
+        "email": "admin@Co-Solve.gov.in",
         "password": "AdminSecretPass123!"
     })
     assert resp3.status_code == 200
@@ -158,7 +158,7 @@ def test_negative_cases():
 
     # 4. Conflict of interest in dispute reviewer assignment
     admin_login = client.post("/api/auth/login", json={
-        "email": "admin@samarthya.gov.in",
+        "email": "admin@Co-Solve.gov.in",
         "password": "AdminSecretPass123!"
     })
     admin_token = admin_login.json()["access_token"]

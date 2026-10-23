@@ -616,7 +616,7 @@ export const ProblemDetailPage = ({ problemId, navigate }) => {
                 onClick={() => setSolverTab('individual')}
                 className={`py-2 rounded-lg transition-colors ${solverTab === 'individual' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500'}`}
               >
-                Individual Solver
+                Individual
               </button>
               <button
                 type="button"

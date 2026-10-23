@@ -1,13 +1,13 @@
 import React from 'react';
 import { Badge } from '../components/Badge';
-import { 
-  CheckCircle2, 
-  Sparkles, 
-  Layers, 
-  ShieldCheck, 
-  Scale, 
-  HelpCircle, 
-  Cpu, 
+import {
+  CheckCircle2,
+  Sparkles,
+  Layers,
+  ShieldCheck,
+  Scale,
+  HelpCircle,
+  Cpu,
   FileCheck2,
   AlertTriangle,
   Award
@@ -85,12 +85,12 @@ export const HowItWorksPage = ({ navigate }) => {
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-14">
-      
+
       {/* Header */}
       <div className="text-center max-w-2xl mx-auto space-y-3">
         <Badge variant="published" size="sm">Structured Methodology</Badge>
         <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
-          How Samarthya Coordinates Civic Impact
+          How Co-Solve Coordinates Civic Impact
         </h1>
         <p className="text-sm text-slate-600 leading-relaxed">
           From grassroots village council challenges to verified student portfolio credentials. Built on transparency, explainable AI, and strict separation between code delivery and community adoption.
@@ -121,10 +121,10 @@ export const HowItWorksPage = ({ navigate }) => {
       <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl p-6 sm:p-8 text-white space-y-6 shadow-lg">
         <div className="flex items-center space-x-2 text-emerald-400">
           <Sparkles className="w-5 h-5" />
-          <h2 className="text-lg font-bold tracking-tight text-white">Explainable Multi-Factor Matching Algorithm</h2>
+          <h2 className="text-lg font-bold tracking-tight text-white">Compatibility Score</h2>
         </div>
         <p className="text-xs text-slate-300 leading-relaxed max-w-2xl">
-          Unlike black-box algorithmic ranking, Samarthya calculates normalized, transparent 0-100 match scores based on five publicly documented criteria. Unknown profile data is never penalized as incompetence.
+          Here's how we calculate percentage Compatibility of student with the problem.
         </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-5 gap-3">
@@ -167,7 +167,7 @@ export const HowItWorksPage = ({ navigate }) => {
           <span>Core Integrity Rule: Prototype ≠ Adoption</span>
         </div>
         <p className="text-xs text-amber-800 leading-relaxed">
-          Many hackathon projects claim impact simply because a website or mobile app was compiled. On Samarthya, a project workspace cannot be marked as adopted without verifiable proof of real-world use: official village council resolutions, confirmed beneficiaries, and local operational maintenance agreements.
+          On Co-Solve, a project workspace cannot be marked as adopted without verifiable proof of real-world use: official village council resolutions, confirmed beneficiaries, and local operational maintenance agreements.
         </p>
       </div>
 

@@ -1,7 +1,7 @@
 const API_BASE = '/api';
 
 export async function apiRequest(endpoint, method = 'GET', data = null, customHeaders = {}) {
-  const token = localStorage.getItem('samarthya_token');
+  const token = localStorage.getItem('Co-Solve_token');
   const headers = {
     'Content-Type': 'application/json',
     ...customHeaders,
@@ -21,7 +21,7 @@ export async function apiRequest(endpoint, method = 'GET', data = null, customHe
   }
 
   const response = await fetch(`${API_BASE}${endpoint}`, config);
-  
+
   if (!response.ok) {
     let errorMessage = 'Request failed';
     try {

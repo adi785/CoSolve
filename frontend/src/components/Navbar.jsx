@@ -1,17 +1,17 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { PersonaSwitcher } from './PersonaSwitcher';
-import { 
-  Compass, 
-  Sparkles, 
-  Bell, 
-  FolderGit2, 
-  CheckCircle2, 
-  ShieldAlert, 
-  PlusCircle, 
-  User, 
-  LogOut, 
-  Menu, 
+import {
+  Compass,
+  Sparkles,
+  Bell,
+  FolderGit2,
+  CheckCircle2,
+  ShieldAlert,
+  PlusCircle,
+  User,
+  LogOut,
+  Menu,
   X,
   Award,
   Layers,
@@ -27,14 +27,14 @@ export const Navbar = ({ currentRoute, navigate }) => {
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-slate-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          
+
           {/* Logo */}
           <div className="flex items-center space-x-3 cursor-pointer" onClick={() => navigate('/')}>
             <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center text-white font-bold text-lg shadow-sm">
               🌱
             </div>
             <div>
-              <span className="font-extrabold text-slate-900 tracking-tight text-lg">Samarthya</span>
+              <span className="font-extrabold text-slate-900 tracking-tight text-lg">Co-Solve</span>
               <span className="hidden sm:inline-block text-[10px] uppercase font-bold tracking-wider text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded ml-2 border border-emerald-200">
                 Societal AI
               </span>
@@ -45,9 +45,8 @@ export const Navbar = ({ currentRoute, navigate }) => {
           <nav className="hidden md:flex items-center space-x-1 lg:space-x-3 text-sm font-medium text-slate-600">
             <button
               onClick={() => navigate('/problems')}
-              className={`px-3 py-1.5 rounded-lg transition-colors flex items-center space-x-1.5 ${
-                currentRoute === '/problems' ? 'text-emerald-700 bg-emerald-50 font-semibold' : 'hover:text-slate-900 hover:bg-slate-100'
-              }`}
+              className={`px-3 py-1.5 rounded-lg transition-colors flex items-center space-x-1.5 ${currentRoute === '/problems' ? 'text-emerald-700 bg-emerald-50 font-semibold' : 'hover:text-slate-900 hover:bg-slate-100'
+                }`}
             >
               <Compass className="w-4 h-4" />
               <span>Challenges</span>
@@ -55,9 +54,8 @@ export const Navbar = ({ currentRoute, navigate }) => {
 
             <button
               onClick={() => navigate('/how-it-works')}
-              className={`px-3 py-1.5 rounded-lg transition-colors ${
-                currentRoute === '/how-it-works' ? 'text-emerald-700 bg-emerald-50 font-semibold' : 'hover:text-slate-900 hover:bg-slate-100'
-              }`}
+              className={`px-3 py-1.5 rounded-lg transition-colors ${currentRoute === '/how-it-works' ? 'text-emerald-700 bg-emerald-50 font-semibold' : 'hover:text-slate-900 hover:bg-slate-100'
+                }`}
             >
               <span>How It Works</span>
             </button>
@@ -67,18 +65,16 @@ export const Navbar = ({ currentRoute, navigate }) => {
               <>
                 <button
                   onClick={() => navigate('/solver/recommendations')}
-                  className={`px-3 py-1.5 rounded-lg transition-colors flex items-center space-x-1.5 ${
-                    currentRoute === '/solver/recommendations' ? 'text-emerald-700 bg-emerald-50 font-semibold' : 'hover:text-slate-900 hover:bg-slate-100'
-                  }`}
+                  className={`px-3 py-1.5 rounded-lg transition-colors flex items-center space-x-1.5 ${currentRoute === '/solver/recommendations' ? 'text-emerald-700 bg-emerald-50 font-semibold' : 'hover:text-slate-900 hover:bg-slate-100'
+                    }`}
                 >
                   <Sparkles className="w-4 h-4 text-emerald-600" />
                   <span>AI Matches</span>
                 </button>
                 <button
                   onClick={() => navigate('/solver/dashboard')}
-                  className={`px-3 py-1.5 rounded-lg transition-colors ${
-                    currentRoute === '/solver/dashboard' ? 'text-emerald-700 bg-emerald-50 font-semibold' : 'hover:text-slate-900 hover:bg-slate-100'
-                  }`}
+                  className={`px-3 py-1.5 rounded-lg transition-colors ${currentRoute === '/solver/dashboard' ? 'text-emerald-700 bg-emerald-50 font-semibold' : 'hover:text-slate-900 hover:bg-slate-100'
+                    }`}
                 >
                   <span>Solver Dashboard</span>
                 </button>
@@ -89,9 +85,8 @@ export const Navbar = ({ currentRoute, navigate }) => {
               <>
                 <button
                   onClick={() => navigate('/provider/dashboard')}
-                  className={`px-3 py-1.5 rounded-lg transition-colors ${
-                    currentRoute === '/provider/dashboard' ? 'text-emerald-700 bg-emerald-50 font-semibold' : 'hover:text-slate-900 hover:bg-slate-100'
-                  }`}
+                  className={`px-3 py-1.5 rounded-lg transition-colors ${currentRoute === '/provider/dashboard' ? 'text-emerald-700 bg-emerald-50 font-semibold' : 'hover:text-slate-900 hover:bg-slate-100'
+                    }`}
                 >
                   <span>Provider Hub</span>
                 </button>
@@ -108,9 +103,8 @@ export const Navbar = ({ currentRoute, navigate }) => {
             {user && user.role === 'organization' && (
               <button
                 onClick={() => navigate('/organization')}
-                className={`px-3 py-1.5 rounded-lg transition-colors flex items-center space-x-1.5 ${
-                  currentRoute === '/organization' ? 'text-amber-700 bg-amber-50 font-semibold' : 'hover:text-slate-900 hover:bg-slate-100'
-                }`}
+                className={`px-3 py-1.5 rounded-lg transition-colors flex items-center space-x-1.5 ${currentRoute === '/organization' ? 'text-amber-700 bg-amber-50 font-semibold' : 'hover:text-slate-900 hover:bg-slate-100'
+                  }`}
               >
                 <Layers className="w-4 h-4 text-amber-600" />
                 <span>Institution Hub</span>
@@ -120,9 +114,8 @@ export const Navbar = ({ currentRoute, navigate }) => {
             {user && user.role === 'admin' && (
               <button
                 onClick={() => navigate('/admin')}
-                className={`px-3 py-1.5 rounded-lg transition-colors flex items-center space-x-1.5 ${
-                  currentRoute === '/admin' ? 'text-rose-700 bg-rose-50 font-semibold' : 'hover:text-slate-900 hover:bg-slate-100'
-                }`}
+                className={`px-3 py-1.5 rounded-lg transition-colors flex items-center space-x-1.5 ${currentRoute === '/admin' ? 'text-rose-700 bg-rose-50 font-semibold' : 'hover:text-slate-900 hover:bg-slate-100'
+                  }`}
               >
                 <ShieldAlert className="w-4 h-4 text-rose-600" />
                 <span>Institution Authority</span>
@@ -132,7 +125,7 @@ export const Navbar = ({ currentRoute, navigate }) => {
 
           {/* Right actions: Persona Switcher, Notifications, User */}
           <div className="flex items-center space-x-2 sm:space-x-3">
-            
+
             {/* Demo Switcher */}
             <PersonaSwitcher />
 
@@ -175,7 +168,7 @@ export const Navbar = ({ currentRoute, navigate }) => {
             {/* User Profile / Logout */}
             {user ? (
               <div className="flex items-center space-x-2 border-l border-slate-200 pl-3">
-                <div 
+                <div
                   onClick={() => {
                     if (user.role === 'solver') navigate(`/solver/portfolio/${user.id}`);
                     else if (user.role === 'provider') navigate('/provider/dashboard');

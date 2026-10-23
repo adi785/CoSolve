@@ -1,4 +1,4 @@
-# Samarthya — AI-Powered Societal Challenge Coordination Platform
+# Co-Solve — AI-Powered Societal Challenge Coordination Platform
 
 An end-to-end web application that connects verified village panchayats and grassroots community providers with student and organizational solvers (universities, NGOs, SHGs). The platform leverages structured AI problem decomposition, explainable multi-factor skill matching, binding project charters, and multi-round testing reviews leading to verified community adoption.
 
@@ -111,7 +111,7 @@ Open [http://localhost:5173](http://localhost:5173) in your browser.
 | **Arjun Sharma** | Student Solver | `arjun.sharma@coep.ac.in` | `DemoPassword123!` | COEP Tech Student (IoT, Water Quality, Sensors) |
 | **Priya Nair** | Student Solver | `priya.nair@iitb.ac.in` | `DemoPassword123!` | IIT Bombay Student (Computer Vision, Mobile App) |
 | **Dr. Vikram Mehta**| Org Solver Lead | `vikram.mehta@ruraltech.org` | `DemoPassword123!` | Director, Rural Tech & Innovation Collective |
-| **Dr. Sunita Rao** | Platform Admin | `admin@samarthya.gov.in` | `AdminSecretPass123!` | Platform Moderator & Compliance Lead |
+| **Dr. Sunita Rao** | Platform Admin | `admin@Co-Solve.gov.in` | `AdminSecretPass123!` | Platform Moderator & Compliance Lead |
 | **Prof. S. Kulkarni**| Independent Reviewer| `dr.kulkarni@iiserpune.ac.in` | `ReviewerPass123!` | Senior Scientist & Independent Audit Committee |
 
 ---

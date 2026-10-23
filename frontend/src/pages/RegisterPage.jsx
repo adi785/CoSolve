@@ -5,24 +5,24 @@ import { ArrowRight, User, Mail, Lock, Building, GraduationCap } from 'lucide-re
 
 export const RegisterPage = ({ navigate }) => {
   const { register } = useAuth();
-  
+
   const [role, setRole] = useState('solver'); // 'solver', 'provider'
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  
+
   // Solver fields
   const [isStudent, setIsStudent] = useState(true);
   const [collegeName, setCollegeName] = useState('');
   const [graduationYear, setGraduationYear] = useState(2026);
-  
+
   // Provider fields
   const [providerType, setProviderType] = useState('panchayat_rep');
   const [panchayatName, setPanchayatName] = useState('');
   const [panchayatState, setPanchayatState] = useState('Maharashtra');
   const [panchayatDistrict, setPanchayatDistrict] = useState('Pune');
   const [designation, setDesignation] = useState('Sarpanch');
-  
+
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
 
@@ -58,10 +58,10 @@ export const RegisterPage = ({ navigate }) => {
 
   return (
     <div className="max-w-md mx-auto px-4 py-16 space-y-6 text-xs">
-      
+
       <div className="text-center space-y-2">
         <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">
-          Create Your Samarthya Account
+          Create Your Co-Solve Account
         </h1>
         <p className="text-slate-500">
           Join verified village authorities and student innovators.
@@ -73,9 +73,8 @@ export const RegisterPage = ({ navigate }) => {
         <button
           type="button"
           onClick={() => setRole('solver')}
-          className={`py-2.5 rounded-xl font-bold transition-colors flex items-center justify-center space-x-1.5 ${
-            role === 'solver' ? 'bg-white text-emerald-800 shadow-xs' : 'text-slate-500'
-          }`}
+          className={`py-2.5 rounded-xl font-bold transition-colors flex items-center justify-center space-x-1.5 ${role === 'solver' ? 'bg-white text-emerald-800 shadow-xs' : 'text-slate-500'
+            }`}
         >
           <GraduationCap className="w-4 h-4" />
           <span>Student / Solver</span>
@@ -84,9 +83,8 @@ export const RegisterPage = ({ navigate }) => {
         <button
           type="button"
           onClick={() => setRole('provider')}
-          className={`py-2.5 rounded-xl font-bold transition-colors flex items-center justify-center space-x-1.5 ${
-            role === 'provider' ? 'bg-white text-emerald-800 shadow-xs' : 'text-slate-500'
-          }`}
+          className={`py-2.5 rounded-xl font-bold transition-colors flex items-center justify-center space-x-1.5 ${role === 'provider' ? 'bg-white text-emerald-800 shadow-xs' : 'text-slate-500'
+            }`}
         >
           <Building className="w-4 h-4" />
           <span>Problem Provider</span>
@@ -94,7 +92,7 @@ export const RegisterPage = ({ navigate }) => {
       </div>
 
       <form onSubmit={handleSubmit} className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-xs space-y-4">
-        
+
         {error && (
           <div className="p-3 bg-rose-50 text-rose-700 border border-rose-200 rounded-xl font-semibold">
             {error}

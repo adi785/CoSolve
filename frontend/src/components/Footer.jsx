@@ -5,14 +5,14 @@ export const Footer = ({ navigate }) => {
     <footer className="bg-slate-900 text-slate-400 py-12 border-t border-slate-800 mt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          
+
           {/* Brand */}
           <div className="space-y-3">
             <div className="flex items-center space-x-2">
               <div className="w-8 h-8 rounded-lg bg-emerald-600 flex items-center justify-center text-white font-bold text-base">
                 🌱
               </div>
-              <span className="text-white font-bold text-lg tracking-tight">Samarthya</span>
+              <span className="text-white font-bold text-lg tracking-tight">Co-Solve</span>
             </div>
             <p className="text-xs leading-relaxed text-slate-400">
               AI-Powered Societal Challenge Coordination Platform bridging grassroots village panchayats and community providers with student and organizational solvers.
@@ -75,7 +75,7 @@ export const Footer = ({ navigate }) => {
         </div>
 
         <div className="mt-8 pt-8 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500">
-          <p>© 2026 Samarthya Civic Tech Platform. Open Public Good.</p>
+          <p>© 2026 Co-Solve Civic Tech Platform. Open Public Good.</p>
           <p className="mt-2 sm:mt-0">Verified against National Rural Development & AI Governance Frameworks</p>
         </div>
       </div>
