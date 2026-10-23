@@ -60,8 +60,24 @@ def test_inactivity_revocation_and_cadence():
             # Create a test active project
             p = db.query(Problem).first()
             u = db.query(Profile).filter(Profile.role == "solver").first()
+            a = db.query(Application).filter(Application.problem_id == p.id).first()
+            if not a:
+                a = Application(
+                    problem_id=p.id,
+                    applicant_id=u.id,
+                    solver_type="individual",
+                    proposal="Test Proposal text for project creation",
+                    approach="Test Approach text for project creation",
+                    match_score_at_application=88.0,
+                    status="accepted"
+                )
+                db.add(a)
+                db.commit()
+                db.refresh(a)
+
             project = Project(
                 problem_id=p.id,
+                application_id=a.id,
                 solver_type="individual",
                 lead_solver_id=u.id,
                 status="in_progress",
