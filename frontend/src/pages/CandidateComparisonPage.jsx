@@ -144,15 +144,31 @@ export const CandidateComparisonPage = ({ problemId, navigate }) => {
                     <div className="flex items-center space-x-2">
                       <h3 className="text-base font-bold text-slate-900">{app.applicant_name}</h3>
                       <span className="text-[11px] font-semibold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200">
-                        {app.solver_type === 'organization' ? 'Organization Solver' : 'Student Solver'}
+                        {app.solver_type === 'team' ? 'College Team' : app.solver_type === 'organization' ? 'Institution' : 'Individual Solver'}
                       </span>
                       {isAccepted && (
                         <Badge variant="published" size="xs">OFFICIALLY SELECTED</Badge>
                       )}
                     </div>
                     <div className="text-xs text-slate-500">
-                      {app.college_name ? `${app.college_name}` : (app.org_name || 'Individual Contributor')}
+                      {app.team_name ? (
+                        <span className="font-semibold text-blue-700">Team {app.team_name} • {app.college_name}</span>
+                      ) : app.college_name ? (
+                        `${app.college_name}`
+                      ) : (
+                        app.org_name || 'Individual Contributor'
+                      )}
                     </div>
+                    {app.team_members && app.team_members.length > 0 && (
+                      <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                        <span className="text-[10px] text-slate-400 font-bold">Roster:</span>
+                        {app.team_members.map((tm, idx) => (
+                          <span key={idx} className="bg-blue-50 text-blue-800 text-[10px] px-2 py-0.5 rounded border border-blue-200 font-medium">
+                            {tm.name} ({tm.email})
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </div>
 
                   {/* Match Score Badge */}
