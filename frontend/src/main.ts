@@ -32,7 +32,76 @@ let liveProblems: Problem[] = [];
 let demoUsers: DemoUser[] = [];
 let userProjects: any[] = [];
 let solverSkills: { id: string; skill_name: string }[] = [];
-let studentDirectory: StudentDirectoryItem[] = [];
+
+// Pre-seeded initial student directory (4 columns: Name with Roll No, Successfully Solved, Unsuccessful, Ongoing)
+let studentDirectory: StudentDirectoryItem[] = [
+  {
+    id: "stu-1",
+    full_name: "Arjun Sharma",
+    roll_number: "COEP-2022-CS-041",
+    email: "arjun.sharma@coep.ac.in",
+    phone: "+91 98230 44120",
+    college_name: "COEP Technological University",
+    avatar_url: "https://api.dicebear.com/7.x/avataaars/svg?seed=ArjunSharma",
+    solved_count: 3,
+    ongoing_count: 1,
+    unsuccessful_count: 0,
+    skills: ["Python", "GIS", "IoT", "React"]
+  },
+  {
+    id: "stu-2",
+    full_name: "Priya Nair",
+    roll_number: "COEP-2022-ENV-019",
+    email: "priya.nair@coep.ac.in",
+    phone: "+91 98230 44121",
+    college_name: "COEP Technological University",
+    avatar_url: "https://api.dicebear.com/7.x/avataaars/svg?seed=PriyaNair",
+    solved_count: 2,
+    ongoing_count: 2,
+    unsuccessful_count: 0,
+    skills: ["Environmental Science", "Water Quality", "Data Analysis"]
+  },
+  {
+    id: "stu-3",
+    full_name: "Rohit Patil",
+    roll_number: "COEP-2022-IT-088",
+    email: "rohit.patil@coep.ac.in",
+    phone: "+91 98230 44122",
+    college_name: "COEP Technological University",
+    avatar_url: "https://api.dicebear.com/7.x/avataaars/svg?seed=RohitPatil",
+    solved_count: 1,
+    ongoing_count: 1,
+    unsuccessful_count: 1,
+    skills: ["Embedded C", "LoRaWAN", "Sensors"]
+  },
+  {
+    id: "stu-4",
+    full_name: "Ananya Deshmukh",
+    roll_number: "COEP-2023-EXTC-012",
+    email: "ananya.deshmukh@coep.ac.in",
+    phone: "+91 98230 44123",
+    college_name: "COEP Technological University",
+    avatar_url: "https://api.dicebear.com/7.x/avataaars/svg?seed=AnanyaDeshmukh",
+    solved_count: 2,
+    ongoing_count: 0,
+    unsuccessful_count: 1,
+    skills: ["Telemetry", "Arduino", "Signal Processing"]
+  },
+  {
+    id: "stu-5",
+    full_name: "Kunal Kulkarni",
+    roll_number: "COEP-2023-MECH-055",
+    email: "kunal.kulkarni@coep.ac.in",
+    phone: "+91 98230 44124",
+    college_name: "COEP Technological University",
+    avatar_url: "https://api.dicebear.com/7.x/avataaars/svg?seed=KunalKulkarni",
+    solved_count: 1,
+    ongoing_count: 1,
+    unsuccessful_count: 0,
+    skills: ["SolidWorks", "Thermal Analysis", "Solar Systems"]
+  }
+];
+
 let directorySearchQuery = '';
 let directorySortBy = 'name';
 
@@ -58,13 +127,48 @@ let orgDashboardData: any = {
   spoc_name: 'Dr. Vikram Mehta',
   spoc_email: 'vikram.mehta@ruraltech.org',
   address: 'Wellesley Rd, Shivajinagar, Pune, Maharashtra 411005',
+  logo_url: 'https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=400&q=80',
   pie_chart: { solved_by_students: 14, solved_by_collaborators: 6 },
   collaborators: [
     { name: "Rural Technology Action Group (RuTAG)", role: "Technical Mentorship", projects: 4 },
     { name: "State Jal Shakti Mission", role: "Civic Partner", projects: 3 },
     { name: "Maharashtra Innovation Society", role: "CSR Sponsor", projects: 5 }
   ],
-  previous_projects: []
+  previous_projects: [
+    {
+      id: "proj-1",
+      title: "Panchayat Gravity Water Filtration & Fluoride Removal",
+      problem_statement: "Fluoride contamination in drinking water affecting 450 households.",
+      participants: "Arjun Sharma, Priya Nair, RuTAG Mentors",
+      status: "completed",
+      solution_summary: "Activated alumina filter system installed at primary borewell.",
+      completion_date: "2026-08-15",
+      supporting_docs: "https://cosolve.gov.in/docs/water-test-report.pdf",
+      recognition: "State Rural Innovation Award 2026"
+    },
+    {
+      id: "proj-2",
+      title: "Flood Alert & Drainage Sensor Network",
+      problem_statement: "Heavy seasonal waterlogging blocking market roads and transit.",
+      participants: "Enactus Civic Sensing Pod, Prof. Kulkarni",
+      status: "ongoing",
+      solution_summary: "Ultrasonic depth sensors with LoRaWAN telemetry to ward control.",
+      completion_date: "Expected Nov 2026",
+      supporting_docs: "https://cosolve.gov.in/docs/sensor-specs.pdf",
+      recognition: "Smart Cities Grant"
+    },
+    {
+      id: "proj-3",
+      title: "Solar Powered Cold Storage Prototype",
+      problem_statement: "Perishable vegetable post-harvest losses among local farming clusters.",
+      participants: "Mechanical Engineering Pod 4",
+      status: "unsuccessful",
+      solution_summary: "Peltier based experimental cooler; lacked thermal capacity for peak summer.",
+      completion_date: "2026-05-10",
+      supporting_docs: "https://cosolve.gov.in/docs/post-mortem.pdf",
+      recognition: "Prototype Documented"
+    }
+  ]
 };
 
 const photos = {
@@ -110,6 +214,31 @@ async function initAppData() {
       { name: "Dr. Sunita Rao", email: "admin@samarthya.gov.in", role: "admin", entity: "State Innovation Council" }
     ]);
 
+    // Always fetch live organisation data and student directory so Organisation view is fully loaded
+    try {
+      const fetchedOrg = await ApiClient.getOrgDashboardStats();
+      if (fetchedOrg && fetchedOrg.org_name) {
+        orgDashboardData = {
+          ...orgDashboardData,
+          ...fetchedOrg,
+          previous_projects: (fetchedOrg.previous_projects && fetchedOrg.previous_projects.length > 0)
+            ? fetchedOrg.previous_projects
+            : orgDashboardData.previous_projects
+        };
+      }
+    } catch (e) {
+      console.debug("Org stats note:", e);
+    }
+
+    try {
+      const fetchedStudents = await ApiClient.getOrgStudents(directorySearchQuery, directorySortBy);
+      if (fetchedStudents && fetchedStudents.length > 0) {
+        studentDirectory = fetchedStudents;
+      }
+    } catch (e) {
+      console.debug("Student directory note:", e);
+    }
+
     // Fetch role-specific stats
     if (currentUser) {
       if (currentUser.role === 'provider') {
@@ -117,11 +246,11 @@ async function initAppData() {
       } else if (currentUser.role === 'solver') {
         solverDashboardData = await ApiClient.getSolverStats().catch(() => solverDashboardData);
         solverSkills = await ApiClient.getSkills().catch(() => []);
-      } else if (currentUser.role === 'organization' || currentUser.role === 'institution' || currentUser.role === 'admin') {
-        orgDashboardData = await ApiClient.getOrgDashboardStats().catch(() => orgDashboardData);
-        studentDirectory = await ApiClient.getOrgStudents(directorySearchQuery, directorySortBy).catch(() => []);
       }
     }
+
+    // Check hash route
+    handleHashRoute();
 
     render();
   } catch (err) {
@@ -205,12 +334,44 @@ function renderSvgPieChart(slices: { label: string; value: number; color: string
     </div>`;
 }
 
+function handleHashRoute() {
+  const hash = window.location.hash.toLowerCase();
+  if (hash === '#organisation' || hash === '#organization') {
+    activeOrgTab = 'Overview';
+    currentView = 'organisation';
+  } else if (hash === '#students' || hash === '#organisation-students') {
+    activeOrgTab = 'List of Students';
+    currentView = 'organisation';
+  } else if (hash === '#collaborators') {
+    activeOrgTab = 'List of Collaborators';
+    currentView = 'organisation';
+  } else if (hash === '#solver') {
+    currentView = 'solver';
+  } else if (hash === '#provider') {
+    currentView = 'provider';
+  } else if (hash === '#register') {
+    currentView = 'register';
+  } else if (hash === '#home') {
+    currentView = 'home';
+  }
+}
+
+window.addEventListener('hashchange', () => {
+  handleHashRoute();
+  render();
+});
+
 function go(view: View) {
   currentView = view;
   modalOpen = false;
   applyModalOpen = false;
   studentDetailModalOpen = false;
   authError = '';
+  if (view === 'organisation') {
+    window.location.hash = activeOrgTab === 'List of Students' ? 'students' : 'organisation';
+  } else {
+    window.location.hash = view;
+  }
   render();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -241,6 +402,7 @@ function header() {
         <button class="nav-link" data-scroll="challenges">Explore</button>
         <button class="nav-link" data-scroll="solved-problems">Solved problems</button>
         <button class="nav-link" data-scroll="impact">Impact</button>
+        <button class="nav-link ${currentView === 'organisation' ? 'active' : ''}" data-view="organisation" style="font-weight: 700; color: #422d27; border: 1px solid var(--line); border-radius: 20px; padding: 4px 12px; background: var(--card);">⌂ Organisation</button>
       </nav>
     </header>`;
 }
@@ -842,39 +1004,59 @@ function organisationPage() {
   const aicte = orgDashboardData.aicte_code || '1-34891024';
   const spocName = orgDashboardData.spoc_name || 'Dr. Vikram Mehta';
   const spocEmail = orgDashboardData.spoc_email || 'vikram.mehta@ruraltech.org';
-  const orgAddress = orgDashboardData.address || 'Wellesley Rd, Shivajinagar, Pune, Maharashtra';
+  const orgAddress = orgDashboardData.address || 'Wellesley Rd, Shivajinagar, Pune, Maharashtra 411005';
   const orgLogo = orgDashboardData.logo_url || photos.school;
 
+  // Strict categorical variables requested: "Problem solved by students" and "Problem solved by collaborators"
   const pieSlices = [
-    { label: 'Solved by Students', value: orgDashboardData.pie_chart.solved_by_students, color: '#16a34a' },
-    { label: 'Solved by Collaborators', value: orgDashboardData.pie_chart.solved_by_collaborators, color: '#8b5cf6' }
+    { label: 'Problem solved by students', value: orgDashboardData.pie_chart?.solved_by_students ?? 14, color: '#16a34a' },
+    { label: 'Problem solved by collaborators', value: orgDashboardData.pie_chart?.solved_by_collaborators ?? 6, color: '#8b5cf6' }
   ];
 
   return `
     <div class="section section-pad prd-dashboard-layout">
-      <!-- 5.1 Left Sidebar — Organisation Profile & Nav -->
+      <!-- 5.1 Left Sidebar: Imageholder for uploaded logo, Institute Name, SPOC Name, SPOC Email, Institute Address, List of student of that institute, List of collaborators -->
       <aside class="prd-sidebar">
-        <div class="sidebar-profile">
-          <img class="sidebar-avatar" src="${orgLogo}" alt="${escapeHTML(orgName)}" style="border-radius: 16px;">
-          <h2 class="sidebar-name">${escapeHTML(orgName)}</h2>
-          <span class="tag" style="align-self: center;">AICTE: ${escapeHTML(aicte)}</span>
-          <div class="sidebar-meta"><strong>SPOC:</strong> ${escapeHTML(spocName)}</div>
-          <div class="sidebar-meta">✉ ${escapeHTML(spocEmail)}</div>
-          <div class="sidebar-meta">⌖ ${escapeHTML(orgAddress)}</div>
+        <!-- 1. Imageholder for uploaded logo -->
+        <div class="logo-imageholder" id="org-logo-imageholder">
+          <img src="${orgLogo}" alt="${escapeHTML(orgName)} Logo">
+          <span class="logo-imageholder-label">Uploaded Institute Logo</span>
         </div>
 
-        <nav class="sidebar-nav-list">
+        <!-- 2. Institute Name -->
+        <div class="sidebar-profile" style="align-items: flex-start; text-align: left; width: 100%;">
+          <div class="org-field-label">Institute Name</div>
+          <h2 class="sidebar-name" style="font-size: 19px; margin-top: 2px;">${escapeHTML(orgName)}</h2>
+          <span class="tag" style="align-self: flex-start; margin-top: 4px;">AICTE: ${escapeHTML(aicte)}</span>
+        </div>
+
+        <!-- 3. SPOC Name, 4. SPOC Email, 5. Institute Address -->
+        <div class="org-profile-details" style="width: 100%;">
+          <div class="org-profile-detail-item">
+            <strong>SPOC Name</strong>
+            <span>${escapeHTML(spocName)}</span>
+          </div>
+          <div class="org-profile-detail-item">
+            <strong>SPOC Email</strong>
+            <span>${escapeHTML(spocEmail)}</span>
+          </div>
+          <div class="org-profile-detail-item">
+            <strong>Institute Address</strong>
+            <span>${escapeHTML(orgAddress)}</span>
+          </div>
+        </div>
+
+        <!-- 6. List of student of that institute, 7. List of collaborators -->
+        <nav class="sidebar-nav-list" style="width: 100%;">
+          <div style="font-size: 10.5px; font-weight: 800; letter-spacing: 0.8px; color: var(--muted); text-transform: uppercase; margin-bottom: 4px;">Navigation</div>
           <button type="button" class="sidebar-nav-btn ${activeOrgTab === 'Overview' ? 'active' : ''}" data-org-nav="Overview">
-            <span>⌂</span> Overview
+            <span>⌂</span> Organisation Overview
           </button>
           <button type="button" class="sidebar-nav-btn ${activeOrgTab === 'List of Students' ? 'active' : ''}" data-org-nav="List of Students">
-            <span>👥</span> List of Students
+            <span>👥</span> List of student of that institute
           </button>
           <button type="button" class="sidebar-nav-btn ${activeOrgTab === 'List of Collaborators' ? 'active' : ''}" data-org-nav="List of Collaborators">
-            <span>🤝</span> List of Collaborators
-          </button>
-          <button type="button" class="sidebar-nav-btn ${activeOrgTab === 'Previous Projects' ? 'active' : ''}" data-org-nav="Previous Projects">
-            <span>📁</span> Previous Projects
+            <span>🤝</span> List of collaborators
           </button>
         </nav>
       </aside>
@@ -884,41 +1066,75 @@ function organisationPage() {
         ${activeOrgTab === 'Overview' ? renderOrgOverview(pieSlices) : ''}
         ${activeOrgTab === 'List of Students' ? renderStudentDirectory() : ''}
         ${activeOrgTab === 'List of Collaborators' ? renderCollaboratorsList() : ''}
-        ${activeOrgTab === 'Previous Projects' ? renderOrgPreviousProjects() : ''}
       </main>
     </div>`;
 }
 
-// 5.2 Organisation Main Dashboard — Overview & Project Statistics
+// 5.2 Organisation Main Dashboard: Pie-chart & Previous projects made by that institute
 function renderOrgOverview(pieSlices: { label: string; value: number; color: string }[]) {
+  const orgName = orgDashboardData.org_name || 'COEP Technological University';
   return `
-    <div class="eyebrow">INSTITUTIONAL PROJECT PERFORMANCE</div>
-    <h2>Project Statistics & Resolution Breakdown</h2>
+    <div class="eyebrow">ORGANISATION DASHBOARD · ${escapeHTML(orgName).toUpperCase()}</div>
+    <h2>Institutional Problem-Solving & Attribution</h2>
+    <p style="margin: 0 0 16px; font-size: 14px; color: var(--muted);">
+      Direct attribution calculated from verified student completions and external partner collaborations.
+    </p>
 
-    <!-- Pie Chart (Solved by Students vs Solved by Collaborators) -->
+    <!-- Pie Chart (Categorical variables: Problem solved by students vs Problem solved by collaborators) -->
     <div class="pie-chart-card">
       <div class="pie-chart-header">
-        <h3>Attribution of Solved Societal Challenges</h3>
-        <p style="margin: 0; font-size: 13px; color: var(--muted);">Direct attribution calculated from verified student and external collaborator completions.</p>
+        <h3 style="margin: 0 0 4px;">Attribution of Solved Societal Challenges</h3>
+        <p style="margin: 0; font-size: 13px; color: var(--muted);">
+          Comparative breakdown between societal problems resolved by students vs external collaborators.
+        </p>
       </div>
       ${renderSvgPieChart(pieSlices, 190)}
     </div>
 
-    <!-- 5.3 Previous Projects Preview -->
+    <!-- Scrolling down: Previous projects made by that institute -->
     ${renderOrgPreviousProjects()}`;
 }
 
-// PRD Section 6: Organisation Student Directory (`List of Students`)
+// Section 6: Organisation Student Directory (Dedicated page strictly for that institute's students)
 function renderStudentDirectory() {
-  const students = studentDirectory;
+  const orgName = orgDashboardData.org_name || 'COEP Technological University';
+  
+  // Real-time client-side search and sort on studentDirectory
+  let students = [...studentDirectory];
+  if (directorySearchQuery.trim()) {
+    const q = directorySearchQuery.toLowerCase().trim();
+    students = students.filter(s => 
+      s.full_name.toLowerCase().includes(q) || 
+      (s.roll_number && s.roll_number.toLowerCase().includes(q))
+    );
+  }
+
+  if (directorySortBy === 'solved') {
+    students.sort((a, b) => b.solved_count - a.solved_count);
+  } else if (directorySortBy === 'unsuccessful') {
+    students.sort((a, b) => b.unsuccessful_count - a.unsuccessful_count);
+  } else if (directorySortBy === 'ongoing') {
+    students.sort((a, b) => b.ongoing_count - a.ongoing_count);
+  } else {
+    students.sort((a, b) => a.full_name.localeCompare(b.full_name));
+  }
 
   return `
-    <div class="eyebrow">RESTRICTED CAMPUS LEDGER</div>
-    <h2>Associated Student Directory</h2>
-    <p style="color: var(--muted); font-size: 14px;">Authorized directory for institutional student solvers. Track verified problem counts and roll numbers.</p>
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;">
+      <div>
+        <div class="eyebrow">RESTRICTED CAMPUS DIRECTORY · ${escapeHTML(orgName).toUpperCase()}</div>
+        <h2 style="margin: 0;">List of Students</h2>
+        <p style="color: var(--muted); font-size: 13.5px; margin: 4px 0 0;">
+          This page is strictly restricted to students of <strong>${escapeHTML(orgName)}</strong>. Track individual resolution metrics and roll numbers.
+        </p>
+      </div>
+      <button type="button" class="button button-outline" data-org-nav="Overview" style="font-size: 13px;">
+        ← Back to Organisation Overview
+      </button>
+    </div>
 
     <!-- Search & Sorting Toolbar -->
-    <div style="display: flex; gap: 12px; margin: 20px 0 16px; flex-wrap: wrap;">
+    <div style="display: flex; gap: 12px; margin: 16px 0 20px; flex-wrap: wrap;">
       <input 
         id="directory-search-input" 
         value="${escapeHTML(directorySearchQuery)}" 
@@ -927,36 +1143,42 @@ function renderStudentDirectory() {
       
       <select id="directory-sort-select" style="padding: 10px 14px; border-radius: 10px; border: 1px solid var(--line); background: var(--card); font-weight: 600;">
         <option value="name" ${directorySortBy === 'name' ? 'selected' : ''}>Sort by: Student Name</option>
-        <option value="solved" ${directorySortBy === 'solved' ? 'selected' : ''}>Sort by: Successfully Solved</option>
+        <option value="solved" ${directorySortBy === 'solved' ? 'selected' : ''}>Sort by: Successfully solved Problems</option>
+        <option value="unsuccessful" ${directorySortBy === 'unsuccessful' ? 'selected' : ''}>Sort by: Unsuccessful to solve Problems</option>
         <option value="ongoing" ${directorySortBy === 'ongoing' ? 'selected' : ''}>Sort by: Ongoing Problems</option>
-        <option value="unsuccessful" ${directorySortBy === 'unsuccessful' ? 'selected' : ''}>Sort by: Unsuccessful</option>
       </select>
     </div>
 
-    <!-- 6.1 Student Directory Table (4 Primary Columns) -->
+    <!-- 4 Primary Columns Strictly: Name, Successfully solved Problems, Unsuccessful to solve Problems, Ongoing Problems -->
     <div class="directory-table-wrap">
       <table class="directory-table">
         <thead>
           <tr>
-            <th>Student Name</th>
-            <th>Successfully Solved Problems</th>
-            <th>Unsuccessful Problems</th>
-            <th>Ongoing Problems</th>
+            <th style="width: 38%;">Name</th>
+            <th style="width: 20%; text-align: center;">Successfully solved Problems</th>
+            <th style="width: 22%; text-align: center;">Unsuccessful to solve Problems</th>
+            <th style="width: 20%; text-align: center;">Ongoing Problems</th>
           </tr>
         </thead>
         <tbody>
           ${students.length ? students.map(s => `
-            <tr style="cursor: pointer;" data-action="open-student-detail" data-student-id="${s.id}">
+            <tr style="cursor: pointer;" data-action="open-student-detail" data-student-id="${s.id}" title="Click to view detailed participation profile">
               <td>
                 <div class="student-name-col">
                   <span class="student-name-text">${escapeHTML(s.full_name)}</span>
-                  <!-- Roll number directly below name in smaller secondary text -->
-                  <span class="student-roll-text">${escapeHTML(s.roll_number)}</span>
+                  <!-- Roll number of that student written in small visible font directly below name -->
+                  <span class="student-roll-small">Roll No: ${escapeHTML(s.roll_number)}</span>
                 </div>
               </td>
-              <td><span class="count-badge count-solved">${s.solved_count}</span></td>
-              <td><span class="count-badge count-unsuccessful">${s.unsuccessful_count}</span></td>
-              <td><span class="count-badge count-ongoing">${s.ongoing_count}</span></td>
+              <td style="text-align: center;">
+                <span class="count-badge count-solved">${s.solved_count}</span>
+              </td>
+              <td style="text-align: center;">
+                <span class="count-badge count-unsuccessful">${s.unsuccessful_count}</span>
+              </td>
+              <td style="text-align: center;">
+                <span class="count-badge count-ongoing">${s.ongoing_count}</span>
+              </td>
             </tr>
           `).join('') : `
             <tr>
@@ -970,19 +1192,23 @@ function renderStudentDirectory() {
     </div>`;
 }
 
-// 5.3 Previous Projects List for Organisation with Filters
+// 5.3 Previous projects made by that institute (Displayed on scrolling down)
 function renderOrgPreviousProjects() {
+  const orgName = orgDashboardData.org_name || 'COEP Technological University';
   const allProjects = orgDashboardData.previous_projects || [];
   const filtered = allProjects.filter((p: any) => orgProjectFilter === 'All' || p.status === orgProjectFilter);
 
   return `
-    <section style="margin-top: 24px;">
-      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;">
+    <section style="margin-top: 32px;" id="previous-projects-section">
+      <div style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 12px; margin-bottom: 18px;">
         <div>
-          <div class="eyebrow">CAMPUS IMPACT HISTORY</div>
-          <h2 style="margin: 0;">Previous Projects</h2>
+          <div class="eyebrow">CAMPUS IMPACT PORTFOLIO</div>
+          <h2 style="margin: 0;">Previous projects made by that institute</h2>
+          <p style="margin: 4px 0 0; font-size: 13.5px; color: var(--muted);">
+            Verified societal engineering initiatives and solutions completed or underway at ${escapeHTML(orgName)}.
+          </p>
         </div>
-        <!-- Filters: Completed, Ongoing, Unsuccessful -->
+        <!-- Filters: All, Completed, Ongoing, Unsuccessful -->
         <div class="filter-row" style="margin: 0;">
           ${['All', 'completed', 'ongoing', 'unsuccessful'].map(f => `
             <button class="filter-chip ${orgProjectFilter === f ? 'selected' : ''}" data-org-project-filter="${f}">
@@ -1008,10 +1234,10 @@ function renderOrgPreviousProjects() {
               <p><strong>Problem Statement:</strong> ${escapeHTML(p.problem_statement)}</p>
               <p><strong>Participating Students / Collaborators:</strong> ${escapeHTML(p.participants)}</p>
               <p><strong>Solution Summary:</strong> ${escapeHTML(p.solution_summary)}</p>
-              ${p.recognition ? `<div class="muted-line" style="color: #15803d;">★ Recognition: <strong>${escapeHTML(p.recognition)}</strong></div>` : ''}
-              <div style="margin-top: 10px;">
+              ${p.recognition ? `<div class="muted-line" style="color: #15803d; margin-top: 4px;">★ Recognition: <strong>${escapeHTML(p.recognition)}</strong></div>` : ''}
+              <div style="margin-top: 12px;">
                 <a href="${escapeHTML(p.supporting_docs)}" target="_blank" rel="noopener" class="button button-outline" style="font-size: 12px; padding: 6px 14px;">
-                  Supporting Docs & Project Links ↗
+                  Supporting Documents & Project Links ↗
                 </a>
               </div>
             </div>
@@ -1025,10 +1251,22 @@ function renderOrgPreviousProjects() {
 
 // 5.1 Collaborators Directory
 function renderCollaboratorsList() {
+  const orgName = orgDashboardData.org_name || 'COEP Technological University';
   const collaborators = orgDashboardData.collaborators || [];
   return `
-    <div class="eyebrow">EXTERNAL PARTNERSHIPS</div>
-    <h2>List of Collaborators & Mentors</h2>
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;">
+      <div>
+        <div class="eyebrow">EXTERNAL PARTNERSHIPS · ${escapeHTML(orgName).toUpperCase()}</div>
+        <h2 style="margin: 0;">List of Collaborators & Mentors</h2>
+        <p style="color: var(--muted); font-size: 13.5px; margin: 4px 0 0;">
+          Verified civic organizations, CSR sponsors, and technical mentors collaborating with ${escapeHTML(orgName)}.
+        </p>
+      </div>
+      <button type="button" class="button button-outline" data-org-nav="Overview" style="font-size: 13px;">
+        ← Back to Organisation Overview
+      </button>
+    </div>
+
     <div class="previous-work-list" style="margin-top: 20px;">
       ${collaborators.map((c: any) => `
         <article class="project-card reveal" style="margin-bottom: 14px;">
@@ -1449,10 +1687,7 @@ document.addEventListener('change', event => {
   }
   if (target.id === 'directory-sort-select') {
     directorySortBy = target.value;
-    ApiClient.getOrgStudents(directorySearchQuery, directorySortBy).then(stus => {
-      studentDirectory = stus;
-      render();
-    });
+    render();
   }
 });
 
@@ -1460,10 +1695,15 @@ document.addEventListener('input', event => {
   const target = event.target as HTMLInputElement;
   if (target.id === 'directory-search-input') {
     directorySearchQuery = target.value;
-    ApiClient.getOrgStudents(directorySearchQuery, directorySortBy).then(stus => {
-      studentDirectory = stus;
-      render();
-    });
+    const cursorPosition = target.selectionStart;
+    render();
+    const refreshedInput = document.getElementById('directory-search-input') as HTMLInputElement;
+    if (refreshedInput) {
+      refreshedInput.focus();
+      if (cursorPosition !== null) {
+        refreshedInput.setSelectionRange(cursorPosition, cursorPosition);
+      }
+    }
   }
 });
 

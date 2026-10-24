@@ -24,6 +24,8 @@ Base.metadata.create_all(bind=engine)
 
 def _migrate_sqlite_schema():
     """Ensure newly added columns are safely present in existing SQLite database tables."""
+    if not settings.DATABASE_URL.startswith("sqlite"):
+        return
     try:
         with engine.connect() as conn:
             # Check applications table columns

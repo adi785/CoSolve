@@ -7,7 +7,7 @@ from backend.app.database import get_db
 from backend.app.models.user import Profile, Organization, OrganizationMember
 from backend.app.models.problem import Problem, AIProblemAnalysis
 from backend.app.schemas.api_schemas import OrganizationCreate
-from backend.app.services.auth import get_current_user
+from backend.app.services.auth import get_current_user, get_optional_current_user
 from backend.app.services.matching_engine import MatchingEngine
 from backend.app.services.audit import log_audit
 
@@ -196,7 +196,7 @@ def get_org_recommendations(
 def get_my_students(
     search: Optional[str] = None,
     sort_by: Optional[str] = "name",
-    current_user: Profile = Depends(get_current_user),
+    current_user: Optional[Profile] = Depends(get_optional_current_user),
     db: Session = Depends(get_db)
 ):
     """
@@ -204,8 +204,12 @@ def get_my_students(
     Displays 4 primary columns: Student Name (with roll number below), Successfully Solved,
     Unsuccessful, Ongoing problems.
     """
-    membership = db.query(OrganizationMember).filter(OrganizationMember.user_id == current_user.id).first()
-    org = membership.organization if membership else db.query(Organization).first()
+    org = None
+    if current_user:
+        membership = db.query(OrganizationMember).filter(OrganizationMember.user_id == current_user.id).first()
+        org = membership.organization if membership else db.query(Organization).first()
+    if not org:
+        org = db.query(Organization).first()
 
     students = db.query(Profile).filter(Profile.role == "solver").all()
     results = []
@@ -273,14 +277,18 @@ def get_my_students(
 
 @router.get("/my/dashboard-stats")
 def get_org_dashboard_stats(
-    current_user: Profile = Depends(get_current_user),
+    current_user: Optional[Profile] = Depends(get_optional_current_user),
     db: Session = Depends(get_db)
 ):
     """
     Section 5: Organisation Dashboard statistics, pie chart data, and previous projects.
     """
-    membership = db.query(OrganizationMember).filter(OrganizationMember.user_id == current_user.id).first()
-    org = membership.organization if membership else db.query(Organization).first()
+    org = None
+    if current_user:
+        membership = db.query(OrganizationMember).filter(OrganizationMember.user_id == current_user.id).first()
+        org = membership.organization if membership else db.query(Organization).first()
+    if not org:
+        org = db.query(Organization).first()
 
     return {
         "org_name": org.name if org else "COEP Technological University",
